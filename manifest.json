@@ -1,0 +1,40 @@
+{
+  "name": "BenefAgent",
+  "short_name": "BenefAgent",
+  "description": "AI-powered employee benefits optimizer",
+  "start_url": "/pwa.html",
+  "display": "standalone",
+  "background_color": "#f5f2eb",
+  "theme_color": "#1a7a5e",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%231a7a5e'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='110' font-family='serif' fill='white'>B</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231a7a5e'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='300' font-family='serif' fill='white'>B</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "og-image.svg",
+      "sizes": "1200x630",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
+    }
+  ],
+  "categories": [
+    "finance",
+    "health",
+    "productivity"
+  ],
+  "lang": "en-US",
+  "scope": "/",
+  "id": "/pwa.html"
+}

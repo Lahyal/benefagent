@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231a7a5e'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='18' font-family='serif' fill='white'>B</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BenefAgent  -  Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#0e0e0d;--ink2:#3a3a36;--ink3:#888880;
+  --paper:#f5f2eb;--paper2:#ede9df;--white:#ffffff;
+  --accent:#1a7a5e;--accent2:#d4541a;--gold:#c9a84c;
+  --sidebar-w:240px;
+  --font-display:'DM Serif Display',serif;
+  --font-body:'DM Sans',sans-serif;
+}
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--font-body);background:var(--paper);color:var(--ink);display:flex;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.95);}to{opacity:1;transform:scale(1);}}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.sidebar-logo{padding:26px 24px 18px;font-family:var(--font-display);font-size:22px;color:var(--paper);border-bottom:1px solid rgba(245,242,235,.08);text-decoration:none;display:block;}
+.sidebar-logo span{color:var(--accent);}
+.sidebar-user{padding:14px 24px;border-bottom:1px solid rgba(245,242,235,.08);}
+.sidebar-user-email{font-size:12px;color:rgba(245,242,235,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
+.sidebar-user-plan{font-size:11px;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;}
+.sidebar-nav{flex:1;padding:12px 0;overflow-y:auto;}
+.nav-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:rgba(245,242,235,.25);padding:10px 24px 4px;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 24px;cursor:pointer;font-size:13px;color:rgba(245,242,235,.6);font-weight:400;border:none;background:none;width:100%;text-align:left;font-family:var(--font-body);transition:background .15s,color .15s;border-right:2px solid transparent;}
+.nav-item:hover{background:rgba(245,242,235,.06);color:var(--paper);}
+.nav-item.active{background:rgba(26,122,94,.15);color:var(--paper);border-right-color:var(--accent);}
+.nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:.7;}
+.nav-item.active svg{opacity:1;}
+.nav-badge{margin-left:auto;background:var(--accent2);color:white;font-size:9px;font-weight:600;padding:2px 6px;border-radius:100px;}
+.sidebar-bottom{padding:14px 24px;border-top:1px solid rgba(245,242,235,.08);}
+.signout-btn{font-size:12px;color:rgba(245,242,235,.3);cursor:pointer;background:none;border:none;font-family:var(--font-body);display:flex;align-items:center;gap:6px;padding:6px 0;transition:color .15s;width:100%;}
+.signout-btn:hover{color:rgba(245,242,235,.6);}
+
+/* MAIN */
+.main{flex:1;height:100vh;overflow-y:auto;display:flex;flex-direction:column;}
+.topbar{padding:18px 28px;background:var(--paper);border-bottom:1px solid rgba(14,14,13,.08);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:10;}
+.topbar-left h1{font-family:var(--font-display);font-size:20px;color:var(--ink);}
+.topbar-left p{font-size:13px;color:var(--ink3);margin-top:2px;}
+.topbar-actions{display:flex;gap:8px;align-items:center;}
+.btn{padding:9px 18px;border-radius:8px;font-family:var(--font-body);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--accent);color:white;}
+.btn-primary:hover{opacity:.85;}
+.btn-ghost{background:transparent;border:1px solid rgba(14,14,13,.15);color:var(--ink2);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm{padding:6px 14px;font-size:12px;}
+.content{padding:24px 28px;flex:1;}
+.screen{display:none;animation:fadeUp .3s ease both;}
+.screen.active{display:block;}
+
+/* TRIAL BANNER */
+.trial-banner{background:linear-gradient(135deg,#1a7a5e,#0f5a45);padding:10px 20px;display:none;align-items:center;gap:12px;flex-shrink:0;}
+.trial-banner.show{display:flex;}
+.trial-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:100px;padding:3px 10px;font-size:11px;font-weight:600;color:white;letter-spacing:.04em;white-space:nowrap;}
+.trial-text{flex:1;font-size:13px;color:rgba(255,255,255,.9);}
+.trial-cta{padding:7px 16px;background:white;color:var(--accent);border:none;border-radius:8px;font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.trial-cta:hover{opacity:.9;}
+
+/* PAYWALL OVERLAY */
+.paywall-overlay{position:fixed;inset:0;background:rgba(14,14,13,.7);backdrop-filter:blur(12px);z-index:600;display:none;align-items:center;justify-content:center;padding:24px;}
+.paywall-overlay.show{display:flex;}
+.paywall-box{background:var(--paper);border-radius:24px;padding:44px 40px;max-width:460px;width:100%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.25);}
+.paywall-icon{font-size:44px;margin-bottom:16px;}
+.paywall-title{font-family:var(--font-display);font-size:30px;color:var(--ink);margin-bottom:8px;}
+.paywall-sub{font-size:15px;color:var(--ink3);font-weight:300;line-height:1.6;margin-bottom:28px;}
+.paywall-features{display:flex;flex-direction:column;gap:8px;margin-bottom:28px;text-align:left;}
+.paywall-feat{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink2);}
+.paywall-feat-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+.paywall-btn{width:100%;padding:15px;background:var(--accent);color:white;border:none;border-radius:12px;font-family:var(--font-body);font-size:16px;font-weight:500;cursor:pointer;margin-bottom:10px;}
+.paywall-btn:hover{opacity:.88;}
+.paywall-btn-team{width:100%;padding:13px;background:transparent;border:1.5px solid rgba(14,14,13,.15);color:var(--ink2);border-radius:12px;font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;}
+.paywall-btn-team:hover{border-color:var(--accent);color:var(--accent);}
+.paywall-note{font-size:12px;color:var(--ink3);margin-top:14px;line-height:1.5;}
+
+/* ONBOARDING */
+.onboard-overlay{position:fixed;inset:0;background:rgba(14,14,13,.6);backdrop-filter:blur(8px);z-index:500;display:none;align-items:center;justify-content:center;padding:24px;}
+.onboard-overlay.open{display:flex;}
+.onboard-box{background:var(--paper);border-radius:20px;width:100%;max-width:520px;padding:40px;animation:scaleIn .25s ease both;}
+.onboard-step{display:none;}
+.onboard-step.active{display:block;}
+.onboard-logo{font-family:var(--font-display);font-size:22px;color:var(--ink);margin-bottom:24px;}
+.onboard-logo span{color:var(--accent);}
+.onboard-title{font-size:22px;font-weight:500;color:var(--ink);margin-bottom:8px;}
+.onboard-sub{font-size:14px;color:var(--ink3);margin-bottom:24px;line-height:1.6;font-weight:300;}
+.onboard-options{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.onboard-option{padding:12px 14px;border:1.5px solid rgba(14,14,13,.12);border-radius:10px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;}
+.onboard-option:hover{border-color:var(--accent);}
+.onboard-option.selected{border-color:var(--accent);background:rgba(26,122,94,.08);}
+.onboard-option-icon{font-size:18px;flex-shrink:0;}
+.onboard-option-label{font-size:14px;font-weight:500;color:var(--ink);}
+.onboard-option-sub{font-size:12px;color:var(--ink3);}
+.onboard-pips{display:flex;gap:6px;margin-bottom:24px;}
+.onboard-pip{height:3px;flex:1;border-radius:100px;background:rgba(14,14,13,.1);}
+.onboard-pip.done{background:var(--accent);}
+.onboard-pip.active{background:var(--accent);opacity:.5;}
+.onboard-nav{display:flex;justify-content:space-between;align-items:center;}
+
+/* DASHBOARD */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.stat-card{background:var(--white);border-radius:12px;padding:16px 18px;border:1px solid rgba(14,14,13,.07);}
+.stat-card.accent{background:var(--ink);}
+.stat-value{font-family:var(--font-display);font-size:30px;color:var(--ink);line-height:1;}
+.stat-card.accent .stat-value{color:var(--paper);}
+.stat-label{font-size:12px;color:var(--ink3);margin-top:4px;}
+.stat-card.accent .stat-label{color:rgba(245,242,235,.45);}
+.deadline-bar{background:rgba(212,84,26,.08);border:1px solid rgba(212,84,26,.2);border-radius:10px;padding:11px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.card{background:var(--white);border-radius:12px;border:1px solid rgba(14,14,13,.07);overflow:hidden;}
+.card-header{padding:14px 16px;border-bottom:1px solid rgba(14,14,13,.06);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:13px;font-weight:500;color:var(--ink);}
+.card-body{padding:14px 16px;}
+.action-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid rgba(14,14,13,.05);}
+.action-item:last-child{border-bottom:none;}
+.action-dot{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.action-dot.green{background:var(--accent);}
+.action-dot.orange{background:var(--accent2);}
+.action-dot.gold{background:var(--gold);}
+.action-title-text{font-size:13px;font-weight:500;color:var(--ink);}
+.action-desc{font-size:12px;color:var(--ink3);margin-top:2px;line-height:1.4;}
+.action-val{margin-left:auto;font-size:13px;font-weight:500;color:var(--accent);flex-shrink:0;}
+.empty-state{text-align:center;padding:32px 20px;}
+.empty-icon{font-size:32px;margin-bottom:10px;}
+.empty-title{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:6px;}
+.empty-sub{font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.5;}
+.tag{display:inline-block;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:100px;}
+.tag-green{background:rgba(26,122,94,.12);color:#085041;}
+.tag-orange{background:rgba(212,84,26,.1);color:#712B13;}
+.tag-gold{background:rgba(201,168,76,.15);color:#633806;}
+
+/* ANALYZER */
+.drop-zone{border:2px dashed rgba(14,14,13,.15);border-radius:14px;padding:40px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--white);margin-bottom:16px;}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:rgba(26,122,94,.03);}
+.field-label{font-size:12px;color:var(--ink2);display:block;margin-bottom:4px;font-weight:500;}
+.field-input{width:100%;padding:10px 12px;border:1.5px solid rgba(14,14,13,.15);border-radius:8px;font-family:var(--font-body);font-size:13px;background:var(--white);color:var(--ink);outline:none;transition:border .2s;}
+.field-input:focus{border-color:var(--accent);}
+.context-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.file-chosen{display:none;align-items:center;gap:12px;background:rgba(26,122,94,.06);border:1px solid rgba(26,122,94,.2);border-radius:10px;padding:10px 14px;margin-bottom:12px;}
+.analyze-btn{width:100%;padding:13px;background:var(--ink);color:var(--paper);border:none;border-radius:10px;font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;opacity:.4;transition:all .2s;}
+.analyze-btn.ready{opacity:1;background:var(--accent);}
+.spinner{width:40px;height:40px;border:3px solid rgba(14,14,13,.1);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;}
+.results-hero{background:var(--ink);border-radius:14px;padding:22px;margin-bottom:16px;}
+.results-total{font-family:var(--font-display);font-size:48px;color:var(--paper);line-height:1;margin-bottom:4px;}
+.results-sublabel{font-size:12px;color:rgba(245,242,235,.4);margin-bottom:16px;}
+.results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.results-grid-item{background:rgba(255,255,255,.07);border-radius:8px;padding:10px 12px;}
+.results-grid-label{font-size:10px;color:rgba(245,242,235,.4);margin-bottom:2px;}
+.results-grid-val{font-size:13px;color:var(--paper);font-weight:500;}
+.action-card{background:var(--white);border:1px solid rgba(14,14,13,.07);border-radius:10px;padding:13px 15px;display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.priority-badge{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:100px;flex-shrink:0;margin-top:2px;}
+.p-high{background:rgba(26,122,94,.12);color:#085041;}
+.p-medium{background:rgba(212,84,26,.1);color:#712B13;}
+.p-low{background:rgba(201,168,76,.15);color:#633806;}
+
+/* HSA CHECKER MERGED */
+.checker-tabs{display:flex;gap:0;border-bottom:2px solid rgba(14,14,13,.08);margin-bottom:20px;}
+.checker-tab{padding:10px 20px;font-size:14px;font-weight:400;color:var(--ink3);cursor:pointer;border:none;background:none;font-family:var(--font-body);border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s;}
+.checker-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500;}
+.checker-mode{display:none;}
+.checker-mode.active{display:block;}
+.check-row{display:flex;gap:8px;margin-bottom:14px;}
+.check-input{flex:1;padding:11px 14px;border:1.5px solid rgba(14,14,13,.15);border-radius:10px;font-family:var(--font-body);font-size:14px;background:var(--white);color:var(--ink);outline:none;transition:border .2s;}
+.check-input:focus{border-color:var(--accent);}
+.check-select{padding:11px 12px;border:1.5px solid rgba(14,14,13,.15);border-radius:10px;font-family:var(--font-body);font-size:13px;background:var(--white);color:var(--ink);outline:none;cursor:pointer;}
+.check-btn{padding:11px 20px;background:var(--accent);color:white;border:none;border-radius:10px;font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;}
+.check-btn:disabled{opacity:.5;cursor:not-allowed;}
+.quick-pills{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;}
+.quick-pill{padding:5px 12px;background:var(--paper2);border:1px solid rgba(14,14,13,.1);border-radius:100px;font-family:var(--font-body);font-size:12px;color:var(--ink2);cursor:pointer;transition:all .15s;}
+.quick-pill:hover{border-color:var(--accent);color:var(--accent);}
+.result-box{border-radius:12px;padding:16px;margin-bottom:12px;}
+.result-yes{background:rgba(26,122,94,.08);border:1px solid rgba(26,122,94,.2);}
+.result-partial{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);}
+.result-no{background:rgba(212,84,26,.07);border:1px solid rgba(212,84,26,.2);}
+.result-verdict{font-size:16px;font-weight:600;margin-bottom:6px;}
+.result-yes .result-verdict{color:#085041;}
+.result-partial .result-verdict{color:#7a5c00;}
+.result-no .result-verdict{color:#7a2800;}
+.result-explanation{font-size:13px;line-height:1.6;font-weight:300;}
+.result-yes .result-explanation,.result-yes .result-explanation{color:#0d6b55;}
+.result-partial .result-explanation{color:#6b5000;}
+.result-no .result-explanation{color:#6b2200;}
+.result-savings{display:inline-block;margin-top:8px;padding:3px 10px;border-radius:100px;font-size:12px;font-weight:500;background:rgba(26,122,94,.15);color:#085041;}
+.add-claim-btn{margin-top:10px;padding:6px 14px;background:var(--ink);color:var(--paper);border:none;border-radius:7px;font-family:var(--font-body);font-size:12px;font-weight:500;cursor:pointer;}
+.add-claim-btn:hover{background:var(--accent);}
+.history-section{margin-top:20px;}
+.history-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:8px;}
+.history-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(14,14,13,.05);font-size:13px;}
+.history-item:last-child{border-bottom:none;}
+.history-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.receipt-item{display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--white);border:1px solid rgba(14,14,13,.07);border-radius:10px;margin-bottom:7px;}
+.receipt-yes{border-left:3px solid var(--accent);}
+.receipt-partial{border-left:3px solid var(--gold);}
+.receipt-no{border-left:3px solid rgba(14,14,13,.15);}
+
+/* CLAIM BUILDER */
+.claim-section-card{background:var(--white);border:1px solid rgba(14,14,13,.07);border-radius:12px;padding:18px;margin-bottom:14px;}
+.claim-section-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:12px;}
+.claim-item-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(14,14,13,.05);font-size:13px;}
+.claim-item-row:last-child{border-bottom:none;}
+.claim-grand-total{display:flex;justify-content:space-between;font-size:15px;font-weight:600;padding:12px 0 0;border-top:2px solid var(--ink);color:var(--accent);}
+
+/* CALCULATOR */
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+.calc-result{display:none;background:var(--ink);border-radius:12px;padding:22px;margin-top:16px;}
+.calc-result.show{display:block;}
+.calc-result-total{font-family:var(--font-display);font-size:44px;color:var(--paper);line-height:1;margin-bottom:4px;}
+.calc-result-label{font-size:12px;color:rgba(245,242,235,.4);margin-bottom:16px;}
+.calc-breakdown{border-top:1px solid rgba(245,242,235,.1);padding-top:12px;display:flex;flex-direction:column;gap:8px;}
+.calc-bd-row{display:flex;justify-content:space-between;font-size:13px;}
+.calc-bd-label{color:rgba(245,242,235,.5);}
+.calc-bd-val{color:var(--paper);font-weight:500;}
+
+/* HISTORY TABLE */
+.history-table{width:100%;border-collapse:collapse;}
+.history-table th{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);padding:8px 12px;text-align:left;border-bottom:2px solid rgba(14,14,13,.08);}
+.history-table td{padding:11px 12px;font-size:13px;border-bottom:1px solid rgba(14,14,13,.05);color:var(--ink2);}
+.history-table td:first-child{color:var(--ink);font-weight:500;}
+.history-table tr:last-child td{border-bottom:none;}
+
+/* SETTINGS */
+.settings-section{margin-bottom:26px;}
+.settings-section-title{font-size:14px;font-weight:500;color:var(--ink);padding-bottom:10px;border-bottom:1px solid rgba(14,14,13,.08);margin-bottom:12px;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid rgba(14,14,13,.05);}
+.settings-row:last-child{border-bottom:none;}
+.settings-row-label{font-size:14px;color:var(--ink);}
+.settings-row-sub{font-size:12px;color:var(--ink3);margin-top:2px;}
+.plan-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:500;}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .two-col{grid-template-columns:1fr;}
+  .calc-grid{grid-template-columns:1fr;}
+  .results-grid{grid-template-columns:1fr 1fr;}
+  .content{padding:16px;}
+  .topbar{padding:14px 16px;}
+  .context-grid{grid-template-columns:1fr;}
+  .profile-grid{grid-template-columns:1fr;}
+}
+
+.nav-pro-star { transition: opacity .3s; }
+.plan-pro .nav-pro-star { display: none !important; }
+
+</style>
+
+<script>
+  // Redirect mobile users to PWA version
+  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                  window.navigator.standalone === true;
+    if (!isPWA) {
+      window.location.href = '/pwa.html';
+    }
+  }
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div class="onboard-overlay" id="onboard-overlay">
+  <div class="onboard-box">
+    <div class="onboard-logo">Benef<span>Agent</span></div>
+    <div class="onboard-pips">
+      <div class="onboard-pip active" id="pip0"></div>
+      <div class="onboard-pip" id="pip1"></div>
+      <div class="onboard-pip" id="pip2"></div>
+    </div>
+
+    <div class="onboard-step active" id="ostep0">
+      <div class="onboard-title">Welcome to BenefAgent &#127881;</div>
+      <div class="onboard-sub">Your AI benefits agent. Let's set up your profile to find every dollar you are missing. What accounts do you have?</div>
+      <div class="onboard-options">
+        <div class="onboard-option" onclick="toggleOpt(this,'hsa')">
+          <div class="onboard-option-icon">&#127973;</div>
+          <div><div class="onboard-option-label">HSA (Health Savings Account)</div><div class="onboard-option-sub">Paired with an HDHP health plan</div></div>
+        </div>
+        <div class="onboard-option" onclick="toggleOpt(this,'fsa')">
+          <div class="onboard-option-icon">&#128139;</div>
+          <div><div class="onboard-option-label">FSA (Flexible Spending Account)</div><div class="onboard-option-sub">Employer-sponsored, use-it-or-lose-it</div></div>
+        </div>
+        <div class="onboard-option" onclick="toggleOpt(this,'401k')">
+          <div class="onboard-option-icon">&#128200;</div>
+          <div><div class="onboard-option-label">401k with employer matching</div><div class="onboard-option-sub">Get free money from your employer</div></div>
+        </div>
+        <div class="onboard-option" onclick="toggleOpt(this,'commuter')">
+          <div class="onboard-option-icon">&#128652;</div>
+          <div><div class="onboard-option-label">Commuter benefits</div><div class="onboard-option-sub">Pre-tax transit or parking</div></div>
+        </div>
+      </div>
+      <div class="onboard-nav"><span style="font-size:13px;color:var(--ink3);">Step 1 of 3</span><button class="btn btn-primary" onclick="oNext()">Continue &rarr;</button></div>
+    </div>
+
+    <div class="onboard-step" id="ostep1">
+      <div class="onboard-title">A few quick details</div>
+      <div class="onboard-sub">Helps our AI give more accurate dollar amounts and recommendations.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+        <div><label class="field-label">Annual salary ($)</label><input class="field-input" type="number" id="ob-salary" placeholder="75000"></div>
+        <div><label class="field-label">Current 401k %</label><input class="field-input" type="number" id="ob-contrib" placeholder="3"></div>
+        <div><label class="field-label">Family status</label><select class="field-input" id="ob-family"><option value="single">Single</option><option value="married">Married</option><option value="family">Family with kids</option></select></div>
+        <div><label class="field-label">Commute type</label><select class="field-input" id="ob-commute"><option value="transit">Public transit</option><option value="drive">Drive / park</option><option value="remote">Remote / WFH</option></select></div>
+      </div>
+      <div class="onboard-nav"><button class="btn btn-ghost" onclick="oBack()">Back</button><button class="btn btn-primary" onclick="oNext()">Continue &rarr;</button></div>
+    </div>
+
+    <div class="onboard-step" id="ostep2">
+      <div class="onboard-title">You are set! &#10024;</div>
+      <div class="onboard-sub">Here's your 3-step plan to start finding money:</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:13px;background:rgba(26,122,94,.08);border-radius:10px;">
+          <div style="width:30px;height:30px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:600;flex-shrink:0;">1</div>
+          <div><div style="font-size:13px;font-weight:500;color:var(--ink);">Upload your benefits PDF</div><div style="font-size:12px;color:var(--ink3);margin-top:1px;">AI finds every dollar you are missing</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:13px;background:var(--paper2);border-radius:10px;">
+          <div style="width:30px;height:30px;background:var(--ink2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:600;flex-shrink:0;">2</div>
+          <div><div style="font-size:13px;font-weight:500;color:var(--ink);">Check or scan any expense</div><div style="font-size:12px;color:var(--ink3);margin-top:1px;">Type or photo  -  AI checks HSA/FSA eligibility</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:13px;background:var(--paper2);border-radius:10px;">
+          <div style="width:30px;height:30px;background:var(--ink2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:600;flex-shrink:0;">3</div>
+          <div><div style="font-size:13px;font-weight:500;color:var(--ink);">Build and submit your claim</div><div style="font-size:12px;color:var(--ink3);margin-top:1px;">AI generates a ready-to-submit form</div></div>
+        </div>
+      </div>
+      <div class="onboard-nav"><button class="btn btn-ghost" onclick="oBack()">Back</button><button class="btn btn-primary" onclick="oFinish()">Go to my dashboard &rarr;</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <a href="index.html" class="sidebar-logo">Benef<span>Agent</span></a>
+  <div class="sidebar-user">
+    <div class="sidebar-user-email" id="sb-email">Loading...</div>
+    <div class="sidebar-user-plan" id="sb-plan">Pro plan</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Main</div>
+    <button class="nav-item active" onclick="showS('home',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard
+    </button>
+    <button class="nav-item" onclick="gatedFeature('analyzer',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Benefits Analyzer
+    </button>
+    <button class="nav-item" onclick="gatedFeature('checker',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>HSA / FSA Checker
+    </button>
+    <button class="nav-item" onclick="gatedFeature('claims',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Claim Builder
+      <span class="nav-badge" id="claim-badge" style="display:none;">0</span>
+    </button>
+    <button class="nav-item" onclick="showS('calculator',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>Calculator
+    </button>
+    <div class="nav-label" style="margin-top:8px;">Account</div>
+    <button class="nav-item" onclick="gatedFeature('history',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>History
+    </button>
+
+    <button class="nav-item" onclick="showS('settings',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings
+    </button>
+  </nav>
+  <div class="sidebar-bottom">
+        <button class="nav-item" onclick="triggerPWAInstall()" id="nav-install">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v13m0 0l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>Install app
+    </button>
+    <button class="signout-btn" onclick="signOut()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+<!-- PWA INSTALL BANNER -->
+<div id="pwa-banner" style="display:none;background:var(--ink);padding:12px 16px;flex-shrink:0;align-items:center;gap:12px;animation:fadeUp .3s ease;">
+  <div style="width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">📱</div>
+  <div style="flex:1;">
+    <div style="font-size:13px;font-weight:500;color:var(--paper);">Install BenefAgent on your phone</div>
+    <div style="font-size:11px;color:rgba(245,242,235,.4);margin-top:1px;">Quick access  -  works offline  -  scan receipts with camera</div>
+  </div>
+  <button onclick="triggerPWAInstall()" style="padding:7px 14px;background:var(--accent);color:white;border:none;border-radius:8px;font-family:var(--font-body);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;">Install</button>
+  <button onclick="dismissPWABanner()" style="background:none;border:none;color:rgba(245,242,235,.3);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;">✕</button>
+</div>
+
+<!-- TRIAL BANNER -->
+<div class="trial-banner" id="trial-banner">
+  <div class="trial-badge">FREE TRIAL</div>
+  <div class="trial-text" id="trial-banner-text">Your 2-day free trial is active</div>
+  <button class="trial-cta" onclick="showPaywall()">Upgrade to Pro &rarr;</button>
+</div>
+
+<!-- PAYWALL OVERLAY -->
+<div class="paywall-overlay" id="paywall-overlay">
+  <div class="paywall-box">
+    <div class="paywall-icon">🔒</div>
+    <h2 class="paywall-title" id="paywall-title">Your trial has ended</h2>
+    <p class="paywall-sub" id="paywall-sub">Upgrade to keep access to all your benefits tools — HSA/FSA checker, PDF analyzer, claim builder, and more.</p>
+    <div class="paywall-features">
+      <div class="paywall-feat"><div class="paywall-feat-dot"></div>Unlimited HSA/FSA AI eligibility checks</div>
+      <div class="paywall-feat"><div class="paywall-feat-dot"></div>Full benefits PDF analyzer</div>
+      <div class="paywall-feat"><div class="paywall-feat-dot"></div>Receipt scanner &amp; claim builder</div>
+      <div class="paywall-feat"><div class="paywall-feat-dot"></div>FSA/HSA deadline alerts</div>
+      <div class="paywall-feat"><div class="paywall-feat-dot"></div>Annual contribution maximizer</div>
+    </div>
+    <button class="paywall-btn" id="paywall-pro-btn" onclick="upgradePlan('pro')">Get started — $12/month</button>
+    <p style="font-size:12px;color:var(--ink3);margin-top:8px;">+ $6/month per team member you invite</p>
+    <p class="paywall-note">Cancel anytime &mdash; no hidden fees &mdash; instant access after payment</p>
+  </div>
+</div>
+
+
+  <!-- DASHBOARD -->
+  <div id="screen-home" class="screen active">
+    <div class="topbar">
+      <div class="topbar-left"><h1 id="home-greeting">Good morning</h1><p>Your benefits overview</p></div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm" onclick=\"showS('analyzer',this)\">&#128196; Analyze benefits</button>
+        <button class="btn btn-primary btn-sm" onclick="exportSummary()">&#8595; Export</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="deadline-bar" id="deadline-bar" style="display:none;">
+        <div style="font-size:18px;">&#9888;&#65039;</div>
+        <div style="flex:1;"><div style="font-size:13px;color:var(--accent2);font-weight:500;" id="deadline-text">FSA deadline approaching</div><div style="font-size:12px;color:var(--ink3);" id="deadline-sub"></div></div>
+        <div style="font-family:var(--font-display);font-size:28px;color:var(--accent2);" id="deadline-days"></div>
+        <div style="font-size:12px;color:var(--accent2);margin-left:4px;">days</div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card accent"><div class="stat-value" id="stat-found">$0</div><div class="stat-label">found for you</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-claimed">$0</div><div class="stat-label">claimed so far</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-checks">0</div><div class="stat-label">expense checks</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-actions"> - </div><div class="stat-label">actions remaining</div></div>
+      </div>
+      <div id="home-empty">
+        <div class="card"><div class="card-body"><div class="empty-state">
+          <div class="empty-icon">&#128196;</div>
+          <div class="empty-title">Upload your benefits document to get started</div>
+          <div class="empty-sub">Our AI reads your employer benefits packet and finds every dollar you are missing  -  401k, HSA, FSA, commuter benefits, perks and more.</div>
+          <button class="btn btn-primary" onclick=\"showS('analyzer',this)\">Analyze my benefits</button>
+        </div></div></div>
+      </div>
+      <div id="home-loaded" style="display:none;">
+        <div class="two-col" style="margin-bottom:16px;">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Your action plan</div><button class="btn btn-ghost btn-sm" onclick=\"showS('analyzer',this)\">Re-analyze</button></div>
+            <div class="card-body" id="home-actions"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Benefits detected</div></div>
+            <div class="card-body" id="home-benefits"></div>
+          </div>
+        </div>
+        <div class="card" id="suggestions-card" style="display:none;">
+          <div class="card-header"><div class="card-title">&#9889; Smart suggestions</div></div>
+          <div class="card-body" id="home-suggestions"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BENEFITS ANALYZER -->
+  <div id="screen-analyzer" class="screen">
+    <div class="topbar"><div class="topbar-left"><h1>Benefits Analyzer</h1><p>Upload your employer benefits document  -  AI extracts everything</p></div></div>
+    <div class="content" style="max-width:640px;">
+      <div id="analyzer-s1">
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <div style="font-size:32px;margin-bottom:10px;">&#128196;</div>
+          <div style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:4px;">Drop your benefits document here</div>
+          <div style="font-size:13px;color:var(--ink3);">PDF, Word (.docx), JPG or PNG &mdash; or click to browse</div>
+          <input type="file" id="file-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none" onchange="handleFile(this.files[0])">
+        </div>
+        <div class="context-grid">
+          <div><label class="field-label">Annual salary ($)</label><input class="field-input" type="number" id="u-salary" placeholder="75000"></div>
+          <div><label class="field-label">Current 401k %</label><input class="field-input" type="number" id="u-contrib" placeholder="3"></div>
+          <div><label class="field-label">Family status</label><select class="field-input" id="u-family"><option value="single">Single</option><option value="married">Married</option><option value="family">Family with kids</option></select></div>
+          <div><label class="field-label">Commute type</label><select class="field-input" id="u-commute"><option value="transit">Public transit</option><option value="drive">Drive / park</option><option value="remote">Remote / WFH</option></select></div>
+        </div>
+        <div class="file-chosen" id="file-chosen">
+          <span style="font-size:18px;">&#128196;</span>
+          <span id="file-name" style="font-size:13px;flex:1;color:var(--ink);"></span>
+          <button onclick="clearFile()" style="background:none;border:none;font-size:16px;color:var(--ink3);cursor:pointer;">&times;</button>
+        </div>
+        <button class="analyze-btn" id="analyze-btn" onclick="analyzeDoc()" disabled>Analyze my benefits with AI</button>
+        <p style="text-align:center;font-size:12px;color:var(--ink3);margin-top:8px;">Your document is processed privately and never stored.</p>
+      </div>
+      <div id="analyzer-s2" style="display:none;text-align:center;padding:48px 0;">
+        <div class="spinner"></div>
+        <div style="font-size:15px;font-weight:500;color:var(--ink);margin-bottom:6px;" id="analyzer-msg">Reading your benefits document...</div>
+        <div style="font-size:13px;color:var(--ink3);">Extracting 401k, HSA, FSA, health plans and perks</div>
+      </div>
+      <div id="analyzer-s3" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- HSA/FSA CHECKER (MERGED WITH RECEIPT SCANNER) -->
+  <div id="screen-checker" class="screen">
+    <div class="topbar"><div class="topbar-left"><h1>HSA / FSA Checker</h1><p>Type any expense or upload a receipt  -  instant AI eligibility check</p></div></div>
+    <div class="content" style="max-width:640px;">
+      <div class="checker-tabs">
+        <button class="checker-tab active" onclick="switchMode('type',this)">&#9000;&#65039; Type an expense</button>
+        <button class="checker-tab" onclick="switchMode('scan',this)">&#129533; Upload a receipt</button>
+      </div>
+
+      <!-- TYPE MODE -->
+      <div class="checker-mode active" id="mode-type">
+        <div class="check-row">
+          <input class="check-input" id="hsa-input" type="text" placeholder="e.g. prescription glasses, therapy, sunscreen..." onkeydown="if(event.key==='Enter')checkEligibility()">
+          <select class="check-select" id="hsa-type"><option value="hsa">HSA</option><option value="fsa">FSA</option><option value="both">HSA + FSA</option><option value="dependent">Dependent Care FSA</option></select>
+          <button class="check-btn" id="hsa-btn" onclick="checkEligibility()">Check</button>
+        </div>
+        <div style="margin-bottom:12px;">
+          <input class="check-input" id="hsa-amount" type="number" min="0" step="0.01" placeholder="Amount spent (optional, e.g. 150)" style="max-width:260px;font-size:13px;padding:9px 12px;">
+        </div>
+        <div class="quick-pills">
+          <button class="quick-pill" onclick="qCheck('Prescription glasses')">Prescription glasses</button>
+          <button class="quick-pill" onclick="qCheck('Therapy sessions')">Therapy</button>
+          <button class="quick-pill" onclick="qCheck('Gym membership')">Gym membership</button>
+          <button class="quick-pill" onclick="qCheck('Sunscreen SPF 15+')">Sunscreen</button>
+          <button class="quick-pill" onclick="qCheck('LASIK surgery')">LASIK</button>
+          <button class="quick-pill" onclick="qCheck('Dental cleaning')">Dental</button>
+          <button class="quick-pill" onclick="qCheck('Vitamins')">Vitamins</button>
+          <button class="quick-pill" onclick="qCheck('Acupuncture')">Acupuncture</button>
+          <button class="quick-pill" onclick="qCheck('Fertility treatment')">Fertility</button>
+          <button class="quick-pill" onclick="qCheck('Mental health app')">Mental health app</button>
+          <button class="quick-pill" onclick="qCheck('Blood pressure monitor')">BP monitor</button>
+          <button class="quick-pill" onclick="qCheck('Contact lenses')">Contact lenses</button>
+        </div>
+        <div id="hsa-result"></div>
+      </div>
+
+      <!-- SCAN MODE -->
+      <div class="checker-mode" id="mode-scan">
+        <div class="drop-zone" id="receipt-drop" onclick="document.getElementById('receipt-input').click()">
+          <div style="font-size:28px;margin-bottom:8px;">&#129533;</div>
+          <div style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:3px;">Drop your receipt here</div>
+          <div style="font-size:13px;color:var(--ink3);">Photo or PDF  -  pharmacy, doctor, hospital, store</div>
+          <input type="file" id="receipt-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleReceiptFile(this.files[0])">
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:12px;">
+          <div style="flex:1;"><label class="field-label">Account type</label><select class="field-input" id="receipt-account"><option value="hsa">HSA</option><option value="fsa">FSA</option><option value="both">Not sure  -  check both</option><option value="dependent">Dependent Care FSA</option></select></div>
+          <div id="receipt-file-info" style="flex:1;display:none;"><label class="field-label">File selected</label><div style="font-size:13px;color:var(--ink2);padding:10px 12px;background:var(--paper2);border-radius:8px;" id="receipt-filename"> - </div></div>
+        </div>
+        <button class="analyze-btn" id="receipt-btn" onclick="scanReceipt()" disabled>Scan receipt with AI</button>
+        <div id="receipt-result" style="margin-top:14px;"></div>
+      </div>
+
+      <!-- SHARED HISTORY -->
+      <div class="history-section" id="checker-history" style="display:none;">
+        <div class="history-label">Recent checks</div>
+        <div id="checker-history-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLAIM BUILDER -->
+  <div id="screen-claims" class="screen">
+    <div class="topbar">
+      <div class="topbar-left"><h1>Claim Builder</h1><p>AI builds your complete claim form  -  ready to submit to your plan</p></div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm" onclick="clearClaims()">Clear all</button>
+        <button class="btn btn-primary btn-sm" onclick="generateClaim()" id="gen-btn">Generate claim form</button>
+      </div>
+    </div>
+    <div class="content" style="max-width:700px;">
+      <div class="claim-section-card">
+        <div class="claim-section-title">Your details</div>
+        <div class="profile-grid">
+          <div><label class="field-label">Full name</label><input class="field-input" type="text" id="claim-name" placeholder="Your full name"></div>
+          <div><label class="field-label">Member / Plan ID</label><input class="field-input" type="text" id="claim-id" placeholder="From your insurance card"></div>
+          <div><label class="field-label">Account type</label><select class="field-input" id="claim-acct"><option value="hsa">HSA</option><option value="fsa">FSA</option><option value="dependent">Dependent Care FSA</option></select></div>
+          <div><label class="field-label">Employer</label><input class="field-input" type="text" id="claim-employer" placeholder="Your employer"></div>
+        </div>
+      </div>
+      <div class="claim-section-card">
+        <div class="claim-section-title">Expenses to claim</div>
+        <div id="claim-empty-msg" style="text-align:center;padding:18px;color:var(--ink3);font-size:13px;">
+          No items yet. Use the <strong>HSA/FSA Checker</strong> and tap "Add to claim" to add eligible expenses here.
+        </div>
+        <div id="claim-list" style="display:none;"></div>
+        <div id="claim-total" style="display:none;" class="claim-grand-total"><span>Total to claim</span><span id="claim-total-val">$0.00</span></div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(14,14,13,.07);">
+          <div style="font-size:12px;color:var(--ink3);margin-bottom:8px;">Or add manually (one per line):</div>
+          <textarea id="claim-manual" class="field-input" style="resize:vertical;min-height:80px;" placeholder="e.g.&#10;CVS - Prescription - $47.50 - Mar 15 2026&#10;Dr Smith - Therapy - $150 - Mar 20 2026"></textarea>
+        </div>
+      </div>
+      <div id="claim-output" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- CALCULATOR -->
+  <div id="screen-calculator" class="screen">
+    <div class="topbar"><div class="topbar-left"><h1>Benefits Calculator</h1><p>See exactly how much you could be saving</p></div></div>
+    <div class="content" style="max-width:560px;">
+      <div class="card"><div class="card-body" style="padding:22px;">
+        <div class="calc-grid">
+          <div><label class="field-label">Annual salary ($)</label><input class="field-input" type="number" id="c-salary" placeholder="75000"></div>
+          <div><label class="field-label">Employer 401k match</label><select class="field-input" id="c-match"><option value="3">3%</option><option value="4" selected>4%</option><option value="5">5%</option><option value="6">6%</option></select></div>
+          <div><label class="field-label">Your 401k contribution %</label><input class="field-input" type="number" id="c-contrib" placeholder="2"></div>
+          <div><label class="field-label">HSA eligible?</label><select class="field-input" id="c-hsa"><option value="yes">Yes (HDHP plan)</option><option value="no">No</option></select></div>
+          <div><label class="field-label">FSA available?</label><select class="field-input" id="c-fsa"><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div><label class="field-label">Commute to work?</label><select class="field-input" id="c-commute"><option value="yes">Yes</option><option value="no">No / Remote</option></select></div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;padding:13px;font-size:14px;" onclick="calcRun()">Calculate my opportunity</button>
+        <div class="calc-result" id="calc-result">
+          <div class="calc-result-total" id="cr-total">--</div>
+          <div class="calc-result-label">total annual opportunity</div>
+          <div class="calc-breakdown">
+            <div class="calc-bd-row"><span class="calc-bd-label">Uncaptured 401k match</span><span class="calc-bd-val" id="cr-match">--</span></div>
+            <div class="calc-bd-row"><span class="calc-bd-label">HSA tax savings</span><span class="calc-bd-val" id="cr-hsa">--</span></div>
+            <div class="calc-bd-row"><span class="calc-bd-label">FSA savings (est.)</span><span class="calc-bd-val" id="cr-fsa">--</span></div>
+            <div class="calc-bd-row"><span class="calc-bd-label">Commuter benefit (est.)</span><span class="calc-bd-val" id="cr-commute">--</span></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="screen-history" class="screen">
+    <div class="topbar">
+      <div class="topbar-left"><h1>History</h1><p>All your checks, analyses and claims</p></div>
+      <div class="topbar-actions"><button class="btn btn-ghost btn-sm" onclick="exportSummary()">&#8595; Export year summary</button></div>
+    </div>
+    <div class="content">
+      <div class="card" style="margin-bottom:16px;"><div class="card-header"><div class="card-title">Benefits analyses</div></div><div class="card-body" id="h-analyses"><div class="empty-state"><div class="empty-icon">&#128196;</div><div class="empty-title">No analyses yet</div></div></div></div>
+      <div class="card" style="margin-bottom:16px;"><div class="card-header"><div class="card-title">HSA/FSA checks</div></div><div class="card-body" id="h-checks"><div class="empty-state"><div class="empty-icon">&#10003;</div><div class="empty-title">No checks yet</div></div></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">Claims built</div></div><div class="card-body" id="h-claims"><div class="empty-state"><div class="empty-icon">&#128196;</div><div class="empty-title">No claims yet</div></div></div></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="screen-settings" class="screen">
+    <div class="topbar"><div class="topbar-left"><h1>Settings</h1><p>Account and preferences</p></div></div>
+    <div class="content" style="max-width:540px;">
+      <div class="settings-section">
+        <div class="settings-section-title">Profile</div>
+        <div class="profile-grid" style="margin-bottom:14px;">
+          <div><label class="field-label">Annual salary ($)</label><input class="field-input" type="number" id="s-salary" placeholder="75000"></div>
+          <div><label class="field-label">401k contribution %</label><input class="field-input" type="number" id="s-contrib" placeholder="3"></div>
+          <div><label class="field-label">Family status</label><select class="field-input" id="s-family"><option value="single">Single</option><option value="married">Married</option><option value="family">Family with kids</option></select></div>
+          <div><label class="field-label">Commute type</label><select class="field-input" id="s-commute"><option value="transit">Public transit</option><option value="drive">Drive / park</option><option value="remote">Remote / WFH</option></select></div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="saveProfile()">Save profile</button>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">Account</div>
+        <div class="settings-row"><div><div class="settings-row-label">Email</div><div class="settings-row-sub" id="s-email"> - </div></div></div>
+        <div class="settings-row"><div><div class="settings-row-label">Plan</div><div class="settings-row-sub">Current subscription</div></div><span class="plan-badge plan-pro" id="s-plan-badge">Pro</span></div>
+        <div class="settings-row"><div><div class="settings-row-label">Manage billing</div><div class="settings-row-sub">Update card, view invoices, cancel</div></div><button class="btn btn-ghost btn-sm" onclick="manageBilling()" id="billing-btn">Manage</button></div>
+        <div class="settings-row"><div><div class="settings-row-label">Sign out</div><div class="settings-row-sub">Sign out on this device</div></div><button class="btn btn-ghost btn-sm" onclick="signOut()">Sign out</button></div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">Data</div>
+        <div class="settings-row"><div><div class="settings-row-label">Export year summary</div><div class="settings-row-sub">Download all your data as PDF</div></div><button class="btn btn-ghost btn-sm" onclick="exportSummary()">Export</button></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const SUPABASE_URL = 'https://ulbwqhrnkbobtdfaclxv.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsYndxaHJua2JvYnRkZmFjbHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNTU0NzksImV4cCI6MjA4ODkzMTQ3OX0.qacUYmr2j7jpe-RhWeOpRt02vWUD8uwlhn9UB_fOv7M';
+const AI_AGENT = SUPABASE_URL + '/functions/v1/ai-agent';
+const AUTH = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY };
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+
+const STRIPE_FN = SUPABASE_URL + '/functions/v1/stripe-webhook';
+
+// ── SUBSCRIPTION & TRIAL ─────────────────────────────────────────────────
+// userPlan: 'trial' | 'pro' | 'team' | 'none'
+let userPlan = 'none';
+let trialEndsAt = null;
+
+async function loadUserPlan() {
+  try {
+    // 1. Check own active subscription first (pro or team)
+    const { data: sub } = await sb.from('subscriptions')
+      .select('plan,status,stripe_customer_id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (sub?.status === 'active' && sub?.plan) {
+      userPlan = sub.plan;
+      window._stripeCustomerId = sub.stripe_customer_id || null;
+      updatePlanUI();
+      return;
+    }
+    window._stripeCustomerId = sub?.stripe_customer_id || null;
+  } catch(_) {}
+
+  // 2. No subscription — check trial
+  try {
+    let { data: profile } = await sb.from('profiles')
+      .select('trial_ends_at, onboarded')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile?.trial_ends_at) {
+      const end = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
+      await sb.from('profiles').upsert({ id: user.id, trial_ends_at: end, onboarded: false });
+      profile = { trial_ends_at: end, onboarded: false };
+    }
+
+    trialEndsAt = new Date(profile.trial_ends_at);
+    userPlan = trialEndsAt > new Date() ? 'trial' : 'none';
+    window._userOnboarded = !!profile?.onboarded;
+  } catch(_) {
+    userPlan = 'none';
+    window._userOnboarded = false;
+  }
+
+  updatePlanUI();
+}
+
+function updatePlanUI() {
+  try {
+    const planEl = document.getElementById('sb-plan');
+    const planBadge = document.getElementById('s-plan-badge');
+    const trialBanner = document.getElementById('trial-banner');
+    const trialText = document.getElementById('trial-banner-text');
+
+    // Hide trial banner by default
+    if (trialBanner) trialBanner.classList.remove('show');
+
+    if (userPlan === 'pro') {
+      if (planEl) { planEl.textContent = 'PRO PLAN'; planEl.style.color = '#c9a84c'; }
+      if (planBadge) { planBadge.textContent = 'Pro'; planBadge.className = 'plan-badge plan-pro'; }
+      document.querySelectorAll('.nav-pro-star').forEach(s => s.style.display = 'none');
+
+    } else if (userPlan === 'trial') {
+      // Calculate hours/days remaining
+      const msLeft = trialEndsAt - new Date();
+      const hoursLeft = Math.ceil(msLeft / 3600000);
+      const daysLeft = Math.ceil(msLeft / 86400000);
+      const timeStr = hoursLeft < 24 ? hoursLeft + ' hour' + (hoursLeft !== 1 ? 's' : '') : daysLeft + ' day' + (daysLeft !== 1 ? 's' : '');
+
+      if (planEl) { planEl.textContent = 'FREE TRIAL'; planEl.style.color = 'rgba(245,242,235,.5)'; }
+      if (planBadge) { planBadge.textContent = 'Trial'; planBadge.className = 'plan-badge'; planBadge.style.background='rgba(26,122,94,.1)'; planBadge.style.color='var(--accent)'; }
+      if (trialBanner && trialText) {
+        trialText.textContent = timeStr + ' left in your free trial';
+        trialBanner.classList.add('show');
+      }
+      document.querySelectorAll('.nav-pro-star').forEach(s => s.style.display = 'none');
+
+    } else {
+      // 'none' — trial expired, no subscription
+      if (planEl) { planEl.textContent = 'TRIAL ENDED'; planEl.style.color = 'rgba(212,84,26,.8)'; }
+      if (planBadge) { planBadge.textContent = 'Expired'; planBadge.className = 'plan-badge'; planBadge.style.background='rgba(212,84,26,.1)'; planBadge.style.color='#d4541a'; }
+      showPaywall();
+    }
+  } catch(e) { console.log('updatePlanUI error:', e); }
+}
+
+function showPaywall() {
+  document.getElementById('paywall-overlay').classList.add('show');
+}
+
+function getUserPlan() { return userPlan; }
+
+async function upgradePlan(plan) {
+  var btn = (window.event && window.event.target && window.event.target.textContent) ? window.event.target : null;
+  var orig = btn ? btn.textContent : "";
+  if (btn) { btn.textContent = "Loading..."; btn.disabled = true; }
+  try {
+    const res = await fetch(STRIPE_FN + '/create-checkout', {
+      method: 'POST', headers: AUTH,
+      body: JSON.stringify({ plan, userId: user.id, userEmail: user.email, priceId: 'price_1TIEm4Cyv4lcORD3UysEE2nX', successUrl: 'https://benefagent.com/app.html?payment=success', cancelUrl: 'https://benefagent.com/app.html' })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    window.location.href = data.url;
+  } catch(err) {
+    alert('Could not start checkout: ' + err.message);
+    if (btn) { btn.textContent = orig; btn.disabled = false; }
+  }
+}
+
+async function manageBilling() {
+  var btn = document.getElementById("billing-btn");
+  if (btn) { btn.textContent = "Loading..."; btn.disabled = true; }
+  try {
+    if (!window._stripeCustomerId) throw new Error('No subscription found');
+    const res = await fetch(STRIPE_FN + '/create-portal', {
+      method: 'POST', headers: AUTH,
+      body: JSON.stringify({ customerId: window._stripeCustomerId, returnUrl: window.location.href })
+    });
+    const { url, error } = await res.json();
+    if (error) throw new Error(error);
+    window.location.href = url;
+  } catch(err) {
+    alert('Could not open billing: ' + err.message);
+    if (btn) { btn.textContent = 'Manage billing'; btn.disabled = false; }
+  }
+}
+
+let user = null, benefits = null, claimItems = [], checkHistory = [], historyLog = [], userProfile = {}, totalSaved = 0, totalChecks = 0;
+
+// ── INIT ──
+async function init() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'login.html'; return; }
+  user = session.user;
+  document.getElementById('sb-email').textContent = user.email;
+  document.getElementById('s-email').textContent = user.email;
+  const h = new Date().getHours();
+  document.getElementById('home-greeting').textContent = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+  initDropZone();
+  await loadProfileFromSupabase();
+  loadSavedResults();
+  loadCheckHistoryFromDB();
+  await loadUserPlan();
+  checkDeadlines();
+
+  // Handle ?payment=success — Stripe just redirected back after checkout
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('payment') === 'success') {
+    history.replaceState({}, '', 'app.html');
+    // Poll for webhook to finish (up to 8s)
+    let attempts = 0;
+    const poll = setInterval(async () => {
+      attempts++;
+      await loadUserPlan();
+      if (userPlan === 'pro' || userPlan === 'trial' || attempts >= 4) {
+        clearInterval(poll);
+        if (userPlan === 'pro') {
+          document.getElementById('paywall-overlay').classList.remove('show');
+          document.getElementById('trial-banner').classList.remove('show');
+        }
+      }
+    }, 2000);
+  }
+
+  // Handle ?upgrade=plan — came from landing page pricing button
+  const upgParam = params.get('upgrade');
+  if (upgParam === 'pro' && userPlan !== 'pro') {
+    history.replaceState({}, '', 'app.html');
+    setTimeout(() => upgradePlan('pro'), 600);
+  }
+  
+  // Check onboarding — uses value already fetched in loadUserPlan()
+  if (window._userOnboarded === false) {
+    // Double-check localStorage in case user completed on another session
+    if (!localStorage.getItem('ba_onboarded_' + user.id)) {
+      showOnboarding();
+    }
+  }
+
+  sb.auth.onAuthStateChange((_e, s) => { if (!s) window.location.href = 'login.html'; });
+  } catch(e) { console.error('Init error:', e.message); document.getElementById('home-greeting').textContent = 'Dashboard'; }
+}
+
+
+async function signOut() { await sb.auth.signOut(); window.location.href = 'login.html'; }
+
+
+// ── ONBOARDING ──
+let oStep = 0; let oAccounts = [];
+function showOnboarding() { document.getElementById('onboard-overlay').classList.add('open'); }
+function toggleOpt(el, val) {
+  el.classList.toggle('selected');
+  oAccounts = el.classList.contains('selected') ? [...oAccounts, val] : oAccounts.filter(v => v !== val);
+}
+function oNext() { if (oStep < 2) { oStep++; updateOUI(); } }
+function oBack() { if (oStep > 0) { oStep--; updateOUI(); } }
+function updateOUI() {
+  document.querySelectorAll('.onboard-step').forEach((s, i) => s.classList.toggle('active', i === oStep));
+  document.querySelectorAll('.onboard-pip').forEach((p, i) => { p.className = 'onboard-pip' + (i < oStep ? ' done' : i === oStep ? ' active' : ''); });
+}
+async function oFinish() {
+  // Always close the overlay first — never leave user stuck
+  const overlay = document.getElementById('onboard-overlay');
+  if (overlay) overlay.classList.remove('open');
+  window._userOnboarded = true;
+
+  try {
+    userProfile = {
+      accounts: oAccounts,
+      salary: document.getElementById('ob-salary')?.value || '',
+      contrib: document.getElementById('ob-contrib')?.value || '',
+      family: document.getElementById('ob-family')?.value || 'single',
+      commute: document.getElementById('ob-commute')?.value || 'transit'
+    };
+
+    if (user?.id) {
+      localStorage.setItem('ba_profile_' + user.id, JSON.stringify(userProfile));
+      localStorage.setItem('ba_onboarded_' + user.id, '1');
+      // Fire-and-forget Supabase saves
+      sb.from('profiles').update({ onboarded: true, onboarded_at: new Date().toISOString() })
+        .eq('id', user.id).catch(e => console.log('onboard update:', e));
+      saveProfileToSupabase();
+    }
+
+    applyProfileToForms();
+  } catch(e) {
+    console.log('oFinish error:', e);
+  }
+}
+async function loadProfileFromSupabase() {
+  // Try Supabase first
+  try {
+    const { data } = await sb.from('profiles').select('*').eq('id', user.id).single();
+    if (data) {
+      userProfile = {
+        salary: data.salary || '',
+        contrib: data.contrib_pct || '',
+        family: data.family_status || 'single',
+        commute: data.commute_type || 'transit',
+        accounts: data.accounts || []
+      };
+      applyProfileToForms();
+      return;
+    }
+  } catch(_e) {}
+  // Fall back to localStorage
+  loadProfile();
+}
+
+async function saveProfileToSupabase() {
+  if (!user) return;
+  try {
+    await sb.from('profiles').upsert({
+      id: user.id,
+      email: user.email,
+      full_name: user.user_metadata?.full_name || '',
+      salary: parseInt(userProfile.salary) || null,
+      contrib_pct: parseFloat(userProfile.contrib) || null,
+      family_status: userProfile.family || 'single',
+      commute_type: userProfile.commute || 'transit',
+      accounts: userProfile.accounts || [],
+      updated_at: new Date().toISOString()
+    });
+  } catch(e) {
+    console.log('Profile save error:', e);
+  }
+}
+function applyProfileToForms() {
+  ['salary','contrib','family','commute'].forEach(k => {
+    if (userProfile[k]) {
+      ['u-','s-','ob-'].forEach(p => { const el = document.getElementById(p+k); if (el) el.value = userProfile[k]; });
+    }
+  });
+}
+function saveProfile() {
+  userProfile = { salary: document.getElementById('s-salary').value, contrib: document.getElementById('s-contrib').value, family: document.getElementById('s-family').value, commute: document.getElementById('s-commute').value };
+  localStorage.setItem('ba_profile_' + user?.id, JSON.stringify(userProfile));
+  saveProfileToSupabase();
+  const btn = event.target; btn.textContent = 'Saved!'; setTimeout(() => btn.textContent = 'Save profile', 2000);
+}
+
+// ── DEADLINES ──
+function checkDeadlines() {
+  const now = new Date(), deadline = new Date(now.getFullYear(), 11, 31);
+  const days = Math.ceil((deadline - now) / 86400000);
+  if (days <= 90) {
+    document.getElementById('deadline-bar').style.display = 'flex';
+    document.getElementById('deadline-text').textContent = 'FSA deadline: Dec 31, ' + now.getFullYear();
+    document.getElementById('deadline-sub').textContent = 'Use your FSA funds before you lose them';
+    document.getElementById('deadline-days').textContent = days;
+  }
+}
+
+// ── NAVIGATION ──
+function gotoScreen(id) { showS(id, null); }
+function showS(id, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+
+// ── FEATURE GATING ────────────────────────────────────────────────────────
+function gatedFeature(screen, btn) {
+  if (userPlan === 'none') { showPaywall(); return; }
+  showS(screen, btn);
+}
+
+
+
+// ── FILE UPLOAD ──
+let selFile = null;
+function initDropZone() {
+  const dz = document.getElementById('drop-zone');
+  if (!dz) return;
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); });
+}
+function handleFile(f) {
+  if (!f) return; selFile = f;
+  document.getElementById('file-chosen').style.display = 'flex';
+  document.getElementById('file-name').textContent = f.name + ' (' + (f.size/1024).toFixed(0) + ' KB)';
+  const b = document.getElementById('analyze-btn'); b.disabled = false; b.classList.add('ready');
+}
+function clearFile() {
+  selFile = null; document.getElementById('file-input').value = '';
+  document.getElementById('file-chosen').style.display = 'none';
+  const b = document.getElementById('analyze-btn'); b.disabled = true; b.classList.remove('ready');
+}
+
+// ── ANALYZER ──
+async function analyzeDoc() {
+  if (!selFile) return;
+  document.getElementById('analyzer-s1').style.display = 'none';
+  document.getElementById('analyzer-s2').style.display = 'block';
+  const msgs = ['Reading your document...','Identifying health plans...','Checking 401k...','Scanning HSA/FSA...','Finding perks...','Calculating opportunity...'];
+  let mi = 0; const t = setInterval(() => { document.getElementById('analyzer-msg').textContent = msgs[mi=(mi+1)%msgs.length]; }, 2000);
+  try {
+    const base64 = await toB64(selFile);
+    const isPdf = selFile.type === 'application/pdf';
+    const isWord = selFile.name.match(/\.docx?$/i);
+    const mediaType = isPdf ? 'application/pdf' : isWord ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : selFile.type || 'image/jpeg';
+    const res = await fetch(AI_AGENT, { method: 'POST', headers: AUTH, body: JSON.stringify({ action: 'analyze_benefits', fileData: base64, mediaType, userContext: { salary: document.getElementById('u-salary').value || userProfile.salary, contrib: document.getElementById('u-contrib').value || userProfile.contrib, family: document.getElementById('u-family').value, commute: document.getElementById('u-commute').value } }) });
+    clearInterval(t);
+    if (!res.ok) throw new Error('Analysis failed  -  check your Edge Function is deployed');
+    const b = await res.json();
+    if (b.error) throw new Error(b.error);
+    benefits = b; await saveResults(b); showAnalysisResults(b); updateDashboard(b);
+    addH('analysis', { employer: b.employer, total: b.total_opportunity || 0, date: new Date().toLocaleDateString() });
+  } catch(err) { clearInterval(t); document.getElementById('analyzer-s1').style.display = 'block'; document.getElementById('analyzer-s2').style.display = 'none'; showErr(err.message); }
+}
+
+function showAnalysisResults(b) {
+  document.getElementById('analyzer-s2').style.display = 'none';
+  document.getElementById('analyzer-s3').style.display = 'block';
+  const total = b.total_opportunity || (b.actions||[]).reduce((s,a) => s+(a.estimated_annual_value||0), 0);
+  const det = [{label:'401k',val:b['401k_match']||'Not found'},{label:'HSA',val:b.hsa_available?'Available':'Not available'},{label:'FSA',val:b.fsa_available?'$'+(b.fsa_limit||3400).toLocaleString():'Not available'},{label:'Commuter',val:b.commuter_benefit?'$'+(b.commuter_monthly_limit||325)+'/mo':'None'},{label:'Tuition',val:b.tuition_reimbursement>0?'$'+b.tuition_reimbursement.toLocaleString()+'/yr':'None'},{label:'Gym',val:b.gym_reimbursement>0?'$'+b.gym_reimbursement.toLocaleString()+'/yr':'None'}];
+  var _s3 = '<div class="results-hero"><div class="results-total">$' + total.toLocaleString() + '</div><div class="results-sublabel">found in your benefits package</div></div>';
+  if (b.summary) _s3 += '<div style="font-size:13px;color:var(--ink2);line-height:1.6;padding:13px;background:rgba(26,122,94,.06);border-left:3px solid var(--accent);border-radius:6px;margin-bottom:14px;">' + b.summary + '</div>';
+  _s3 += '<div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:10px;">Action plan</div>';
+  (b.actions || []).forEach(function(a) {
+    _s3 += '<div class="action-card"><span class="priority-badge p-' + (a.priority||'medium') + '">' + (a.priority||'medium') + '</span><div style="flex:1"><div class="action-title">' + (a.title||'') + '</div><div class="action-desc">' + (a.description||'') + '</div></div>' + (a.estimated_annual_value ? '<div class="action-val">+$' + Number(a.estimated_annual_value).toLocaleString() + '/yr</div>' : '') + '</div>';
+  });
+  _s3 += '<div style="display:flex;gap:10px;margin-top:16px;"><button class="btn btn-primary" onclick="showS(\'home\',null)">View dashboard</button><button class="btn btn-ghost" onclick="resetAnalyzer()">Analyze another</button></div>';
+  document.getElementById('analyzer-s3').innerHTML = _s3;
+}
+
+function resetAnalyzer() {
+  clearFile();
+  document.getElementById('analyzer-s1').style.display = 'block';
+  document.getElementById('analyzer-s2').style.display = 'none';
+  document.getElementById('analyzer-s3').style.display = 'none';
+}
+
+// ── HSA/FSA CHECKER ──
+function switchMode(mode, btn) {
+  document.querySelectorAll('.checker-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.checker-mode').forEach(m => m.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('mode-' + mode).classList.add('active');
+}
+function qCheck(exp) { document.getElementById('hsa-input').value = exp; document.getElementById('hsa-amount').value = ''; checkEligibility(); }
+
+async function checkEligibility() {
+  const expense = document.getElementById('hsa-input').value.trim();
+  const type = document.getElementById('hsa-type').value;
+  const amountRaw = parseFloat(document.getElementById('hsa-amount')?.value) || 0;
+  if (!expense) return;
+  const btn = document.getElementById('hsa-btn'), resultEl = document.getElementById('hsa-result');
+  btn.disabled = true; btn.textContent = 'Checking...';
+  resultEl.innerHTML = '<div style="padding:14px;text-align:center;color:var(--ink3);font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;"><div style="width:16px;height:16px;border:2px solid rgba(14,14,13,.1);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0;"></div>Checking 2026 IRS guidelines...</div>';
+  try {
+    const res = await fetch(AI_AGENT, { method: 'POST', headers: AUTH, body: JSON.stringify({
+      action: 'check_eligibility',
+      expense,
+      accountType: type,
+      userContext: {
+        salary: userProfile.salary || null,
+        family: userProfile.family || 'single',
+        accounts: userProfile.accounts || [],
+        hasHSA: (userProfile.accounts || []).includes('hsa'),
+        hasFSA: (userProfile.accounts || []).includes('fsa')
+      }
+    }) });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Edge Function error ${res.status}: ${errText.slice(0,200)}`);
+    }
+    const r = await res.json();
+    if (r.error) throw new Error(r.error);
+    const isYes = r.eligible === 'yes', isPartial = r.eligible === 'partial';
+    const cls = isYes ? 'result-yes' : isPartial ? 'result-partial' : 'result-no';
+    const icon = isYes ? '&#10003;' : isPartial ? '&#9888;' : '&#10007;';
+
+    // Calculate savings: prefer AI value, fall back to amount × tax bracket, fall back to AI default
+    let savings = r.estimated_annual_savings || 0;
+    if (!savings && amountRaw > 0 && (isYes || isPartial)) {
+      const salary = parseFloat(userProfile?.salary) || 75000;
+      const rate = salary > 180000 ? 0.32 : salary > 95000 ? 0.24 : salary > 44000 ? 0.22 : 0.12;
+      savings = Math.round(amountRaw * rate);
+    }
+
+    resultEl.innerHTML = `<div class="result-box ${cls}"><div class="result-verdict">${icon} ${r.verdict}</div><div class="result-explanation">${r.explanation}</div>${r.conditions?`<div class="result-explanation" style="margin-top:6px;font-style:italic;">${r.conditions}</div>`:''} ${r.irs_reference?`<div style="font-size:10px;margin-top:8px;opacity:.6;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:inherit;">${r.irs_reference}</div>`:''} ${savings>0?`<div class="result-savings">Est. tax savings: $${savings}${amountRaw>0?'':'/yr'}</div>`:''} ${isYes||isPartial?`<button class="add-claim-btn" onclick="addClaim('${expense.replace(/'/g,"\\'")}',${amountRaw||savings||0})">+ Add to claim builder</button>`:''}</div>`;
+    totalChecks++; document.getElementById('stat-checks').textContent = totalChecks;
+    checkHistory.unshift({ expense, eligible: r.eligible, verdict: r.verdict, date: new Date().toLocaleDateString() });
+    // Save to Supabase
+    try {
+      await sb.from('check_history').insert({
+        user_id: user.id,
+        expense,
+        account_type: type,
+        eligible: r.eligible,
+        verdict: r.verdict,
+        explanation: r.explanation,
+        estimated_savings: savings
+      });
+    } catch(e) { console.log('Could not save check history:', e); }
+    if (checkHistory.length > 20) checkHistory.pop();
+    renderCheckHistory();
+    addH('check', { expense, eligible: r.eligible, verdict: r.verdict, date: new Date().toLocaleDateString() });
+  } catch(err) {
+    resultEl.innerHTML = `<div style="background:#FCEBEB;border:1px solid #F09595;border-radius:10px;padding:14px;font-size:13px;color:#791F1F;">${err.message}</div>`;
+  }
+  btn.disabled = false; btn.textContent = 'Check';
+}
+
+function renderCheckHistory() {
+  if (!checkHistory.length) return;
+  document.getElementById('checker-history').style.display = 'block';
+  document.getElementById('checker-history-list').innerHTML = checkHistory.slice(0,8).map(h=>`<div class="history-item"><div class="history-dot" style="background:${h.eligible==='yes'?'var(--accent)':h.eligible==='partial'?'var(--gold)':'var(--accent2)'};"></div><span style="flex:1;color:var(--ink);">${h.expense}</span><span style="color:var(--ink3);font-size:12px;">${h.verdict}</span><span style="color:var(--ink3);font-size:11px;margin-left:8px;">${h.date}</span></div>`).join('');
+}
+
+// ── RECEIPT SCANNER ──
+let selReceipt = null;
+const rdz = document.getElementById('receipt-drop');
+rdz.addEventListener('dragover', e => { e.preventDefault(); rdz.classList.add('drag-over'); });
+rdz.addEventListener('dragleave', () => rdz.classList.remove('drag-over'));
+rdz.addEventListener('drop', e => { e.preventDefault(); rdz.classList.remove('drag-over'); handleReceiptFile(e.dataTransfer.files[0]); });
+function handleReceiptFile(f) {
+  if (!f) return;
+  selReceipt = f;
+  document.getElementById('receipt-filename').textContent = f.name;
+  document.getElementById('receipt-file-info').style.display = 'block';
+  const b = document.getElementById('receipt-btn');
+  b.disabled = false;
+  b.classList.add('ready');
+  b.style.opacity = '1';
+  b.style.background = 'var(--accent)';
+  b.style.cursor = 'pointer';
+}
+
+async function scanReceipt() {
+  if (!selReceipt) return;
+  const btn = document.getElementById('receipt-btn'), resultEl = document.getElementById('receipt-result');
+  btn.disabled = true; btn.textContent = 'Scanning...';
+  resultEl.innerHTML = '<div style="padding:14px;text-align:center;color:var(--ink3);font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;"><div style="width:16px;height:16px;border:2px solid rgba(14,14,13,.1);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0;"></div>Reading receipt...</div>';
+  try {
+    const base64 = await toB64(selReceipt);
+    const isPdf = selReceipt.type === 'application/pdf';
+    const mediaType = isPdf ? 'application/pdf' : selReceipt.type || 'image/jpeg';
+    const accountType = document.getElementById('receipt-account').value;
+    const accountLabel = { hsa:'HSA', fsa:'FSA', both:'HSA or FSA', dependent:'Dependent Care FSA' }[accountType];
+    const res = await fetch(AI_AGENT, { method: 'POST', headers: AUTH, body: JSON.stringify({
+      action: 'scan_receipt',
+      fileData: base64,
+      mediaType,
+      accountType,
+      userContext: { salary: userProfile.salary || null, family: userProfile.family || 'single', accounts: userProfile.accounts || [] }
+    }) });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Edge Function error ${res.status}: ${errText.slice(0,200)}`);
+    }
+    const r = await res.json(); if (r.error) throw new Error(r.error);
+    resultEl.innerHTML = `
+      <div style="background:var(--ink);border-radius:12px;padding:16px 18px;margin-bottom:12px;">
+        <div style="font-size:11px;color:rgba(245,242,235,.4);margin-bottom:3px;">${r.store||'Receipt'} &mdash; ${r.date||'Today'}</div>
+        <div style="font-family:var(--font-display);font-size:38px;color:var(--paper);line-height:1;">$${(r.eligible_total||0).toFixed(2)}</div>
+        <div style="font-size:12px;color:rgba(245,242,235,.4);">eligible for ${accountLabel} out of $${(r.total||0).toFixed(2)} total</div>
+      </div>
+      ${r.summary?`<div style="font-size:13px;color:var(--ink2);padding:11px;background:rgba(26,122,94,.06);border-left:3px solid var(--accent);border-radius:8px;margin-bottom:10px;">${r.summary}</div>`:''}
+      ${(r.items||[]).map(item=>`<div class="receipt-item receipt-${item.eligible==='yes'?'yes':item.eligible==='partial'?'partial':'no'}"><span class="tag ${item.eligible==='yes'?'tag-green':item.eligible==='partial'?'tag-gold':'tag-orange'}" style="flex-shrink:0;">${item.eligible==='yes'?'Eligible':item.eligible==='partial'?'Partial':'Not eligible'}</span><div style="flex:1;"><div style="font-size:13px;font-weight:500;color:var(--ink);">${item.name}</div><div style="font-size:12px;color:var(--ink3);margin-top:2px;">${item.reason}</div></div><div style="font-size:13px;font-weight:500;color:${item.eligible!=='no'?'var(--accent)':'var(--ink3)'};">$${(item.amount||0).toFixed(2)}</div></div>`).join('')}
+      ${(r.eligible_total||0)>0?`<button class="add-claim-btn" style="margin-top:10px;" onclick='addReceiptClaim(${JSON.stringify(r)})'>+ Add eligible items to claim builder</button>`:''}`;
+    addH('check', { expense: 'Receipt: '+(r.store||'Unknown'), eligible: 'yes', verdict: '$'+(r.eligible_total||0).toFixed(2)+' eligible', date: new Date().toLocaleDateString() });
+    checkHistory.unshift({ expense: 'Receipt: '+(r.store||'scan'), eligible: 'yes', verdict: '$'+(r.eligible_total||0).toFixed(2)+' eligible', date: new Date().toLocaleDateString() });
+    renderCheckHistory();
+  } catch(err) { resultEl.innerHTML = `<div style="background:#FCEBEB;border:1px solid #F09595;border-radius:10px;padding:14px;font-size:13px;color:#791F1F;">${err.message}</div>`; }
+  btn.disabled = false; btn.textContent = 'Scan receipt with AI'; btn.classList.remove('ready');
+}
+
+function addReceiptClaim(r) {
+  (r.items||[]).filter(i => i.eligible !== 'no').forEach(item => addClaim(item.name + ' (' + (r.store||'Store') + ')', item.amount||0));
+  showS('claims', document.querySelector('[onclick*=claims]'));
+}
+
+// ── CLAIM BUILDER ──
+function addClaim(desc, amount) {
+  claimItems.push({ desc, amount: parseFloat(amount)||0, date: new Date().toLocaleDateString(), id: Date.now() });
+  updateClaimUI();
+  const badge = document.getElementById('claim-badge'); badge.style.display = 'block'; badge.textContent = claimItems.length;
+}
+
+function updateClaimUI() {
+  const empty = document.getElementById('claim-empty-msg'), list = document.getElementById('claim-list'), total = document.getElementById('claim-total');
+  if (!claimItems.length) { empty.style.display = 'block'; list.style.display = 'none'; total.style.display = 'none'; document.getElementById('claim-badge').style.display = 'none'; return; }
+  empty.style.display = 'none'; list.style.display = 'block'; total.style.display = 'flex';
+  list.innerHTML = claimItems.map(i=>`<div class="claim-item-row"><span style="flex:1;font-size:13px;color:var(--ink);">${i.desc}</span><span style="font-size:12px;color:var(--ink3);margin-right:10px;">${i.date}</span><span style="font-size:13px;font-weight:500;color:var(--ink);">$${i.amount.toFixed(2)}</span><button onclick="removeClaim(${i.id})" style="background:none;border:none;color:var(--ink3);cursor:pointer;font-size:16px;padding:0 4px;">&times;</button></div>`).join('');
+  document.getElementById('claim-total-val').textContent = '$' + claimItems.reduce((s,i)=>s+i.amount,0).toFixed(2);
+  document.getElementById('claim-badge').textContent = claimItems.length;
+}
+
+function removeClaim(id) { claimItems = claimItems.filter(i => i.id !== id); updateClaimUI(); }
+function clearClaims() { claimItems = []; updateClaimUI(); document.getElementById('claim-output').style.display = 'none'; }
+
+async function generateClaim() {
+  const name = document.getElementById('claim-name').value.trim();
+  const memberId = document.getElementById('claim-id').value.trim();
+  const accountType = document.getElementById('claim-acct').value;
+  const employer = document.getElementById('claim-employer').value.trim();
+  const manual = document.getElementById('claim-manual').value.trim();
+  const allExp = claimItems.map(i => i.desc + ' - $' + i.amount.toFixed(2) + ' - ' + i.date).join('\n') + (manual ? '\n' + manual : '');
+  if (!allExp.trim()) { alert('Please add at least one expense.'); return; }
+  const btn = document.getElementById('gen-btn'); btn.disabled = true; btn.textContent = 'Building...';
+  try {
+    const res = await fetch(AI_AGENT, { method: 'POST', headers: AUTH, body: JSON.stringify({ action: 'build_claim', name, memberId, accountType, period: new Date().getFullYear().toString(), expenses: allExp, employer }) });
+    if (!res.ok) throw new Error('Could not connect');
+    const claim = await res.json(); if (claim.error) throw new Error(claim.error);
+    showClaimOutput(claim, name);
+    addH('claim', { total: claim.total_amount||0, date: new Date().toLocaleDateString(), id: claim.claim_number });
+    totalSaved += claim.total_amount||0; document.getElementById('stat-claimed').textContent = '$' + Math.round(totalSaved).toLocaleString();
+    // Save claim to Supabase
+    try {
+      await sb.from('claim_history').insert({ user_id: user.id, claim_number: claim.claim_number, total_amount: claim.total_amount||0, account_type: claim.account_type, employer: claim.employer });
+    } catch(e) { console.log('Could not save claim:', e); }
+  } catch(err) { alert('Could not generate: ' + err.message); }
+  btn.disabled = false; btn.textContent = 'Generate claim form';
+}
+
+function showClaimOutput(claim, claimantName) {
+  const out = document.getElementById('claim-output'); out.style.display = 'block';
+  out.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+      <div style="font-size:13px;font-weight:500;color:var(--accent);">&#10003; Claim form ready to submit</div>
+      <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" onclick="printClaim()">&#128424; Download / Print</button><button class="btn btn-ghost btn-sm" onclick="document.getElementById('claim-output').style.display='none'">Close</button></div>
+    </div>
+    <div style="background:var(--white);border:1px solid rgba(14,14,13,.1);border-radius:12px;padding:22px;" id="claim-printable">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+        <div><div style="font-size:17px;font-weight:600;color:var(--ink);">${claim.account_type||'HSA/FSA'} Reimbursement Claim</div><div style="font-size:12px;color:var(--ink3);margin-top:3px;">Claim #${claim.claim_number||'CLM-'+Date.now()} &mdash; ${claim.submission_date||new Date().toLocaleDateString()}</div></div>
+        <div style="text-align:right;font-size:12px;color:var(--ink3);"><div style="font-weight:500;color:var(--ink);">BenefAgent</div><div>benefagent.com</div></div>
+      </div>
+      <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid rgba(14,14,13,.07);">
+        <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:10px;">Claimant</div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(14,14,13,.05);"><span style="color:var(--ink2);">Name</span><span style="font-weight:500;">${claim.claimant||claimantName||' - '}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(14,14,13,.05);"><span style="color:var(--ink2);">Member ID</span><span style="font-weight:500;">${claim.member_id||'TBD'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(14,14,13,.05);"><span style="color:var(--ink2);">Employer</span><span style="font-weight:500;">${claim.employer||' - '}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;"><span style="color:var(--ink2);">Account</span><span style="font-weight:500;">${claim.account_type||'HSA'}</span></div>
+      </div>
+      <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid rgba(14,14,13,.07);">
+        <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:10px;">Expenses</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 2fr 80px;font-size:11px;font-weight:500;color:var(--ink3);padding:6px 0;border-bottom:1px solid rgba(14,14,13,.08);text-transform:uppercase;letter-spacing:.05em;"><span>Date</span><span>Provider</span><span>Description</span><span style="text-align:right;">Amount</span></div>
+        ${(claim.line_items||[]).map(i=>`<div style="display:grid;grid-template-columns:1fr 1fr 2fr 80px;font-size:13px;padding:7px 0;border-bottom:1px solid rgba(14,14,13,.04);"><span style="color:var(--ink2);">${i.date||''}</span><span style="color:var(--ink2);">${i.provider||''}</span><span style="color:var(--ink);">${i.description||''}</span><span style="text-align:right;font-weight:500;color:var(--ink);">$${(i.amount||0).toFixed(2)}</span></div>`).join('')}
+        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:600;padding:12px 0 0;border-top:2px solid var(--ink);color:var(--accent);"><span>Total</span><span>$${(claim.total_amount||0).toFixed(2)}</span></div>
+      </div>
+      ${claim.submission_instructions?`<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:8px;">How to submit</div><div style="font-size:13px;color:var(--ink2);line-height:1.6;font-weight:300;">${claim.submission_instructions}</div></div>`:''}
+      <div style="font-size:11px;color:var(--ink3);line-height:1.5;border-top:1px solid rgba(14,14,13,.06);padding-top:12px;">Generated by BenefAgent AI. Verify amounts against original receipts before submitting.</div>
+    </div>`;
+  out.scrollIntoView({ behavior: 'smooth' });
+}
+
+function printClaim() {
+  var c = document.getElementById('claim-printable') ? document.getElementById('claim-printable').innerHTML : '<p>No claim data</p>';
+  var w = window.open('', '_blank');
+  w.document.write('<!DOCTYPE html><html><head><title>BenefAgent Claim</title><style>body{font-family:sans-serif;padding:40px;max-width:800px;margin:0 auto;}</style></head><body>' + c + '</body></html>');
+  w.document.close();
+  setTimeout(function() { w.print(); }, 500);
+}
+
+
+function calcRun() {
+  const sal = parseFloat(document.getElementById('c-salary').value)||75000;
+  const match = parseFloat(document.getElementById('c-match').value)||4;
+  const contrib = parseFloat(document.getElementById('c-contrib').value)||0;
+  const hsa = document.getElementById('c-hsa').value==='yes';
+  const fsa = document.getElementById('c-fsa').value==='yes';
+  const commute = document.getElementById('c-commute').value==='yes';
+  const matchMissed = sal*Math.max(0,match-contrib)/100;
+  const hsaSav = hsa?Math.round(4400*.25):0;
+  const fsaSav = fsa?Math.round(3400*.25):0;
+  const commuteSav = commute?1560:0;
+  const total = Math.round(matchMissed+hsaSav+fsaSav+commuteSav);
+  document.getElementById('cr-total').textContent = '$'+total.toLocaleString()+'/yr';
+  document.getElementById('cr-match').textContent = matchMissed>0?'+$'+Math.round(matchMissed).toLocaleString()+'/yr':'Already maxed';
+  document.getElementById('cr-hsa').textContent = hsa?'+$'+hsaSav.toLocaleString()+'/yr':'Not eligible';
+  document.getElementById('cr-fsa').textContent = fsa?'+$'+fsaSav.toLocaleString()+'/yr':'Not available';
+  document.getElementById('cr-commute').textContent = commute?'+$'+commuteSav.toLocaleString()+'/yr':'Not applicable';
+  document.getElementById('calc-result').classList.add('show');
+}
+
+// ── HISTORY ──
+function addH(type, data) {
+  historyLog.unshift({ type, ...data });
+  renderHistory();
+}
+
+function renderHistory() {
+  const analyses = historyLog.filter(h=>h.type==='analysis');
+  const checks = historyLog.filter(h=>h.type==='check');
+  const claims = historyLog.filter(h=>h.type==='claim');
+  document.getElementById('h-analyses').innerHTML = analyses.length ? `<table class="history-table"><thead><tr><th>Employer</th><th>Opportunity</th><th>Date</th></tr></thead><tbody>${analyses.map(a=>`<tr><td>${a.employer||'Unknown'}</td><td style="color:var(--accent);">$${(a.total||0).toLocaleString()}</td><td>${a.date||''}</td></tr>`).join('')}</tbody></table>` : '<div class="empty-state"><div class="empty-icon">&#128196;</div><div class="empty-title">No analyses yet</div></div>';
+  document.getElementById('h-checks').innerHTML = checks.length ? `<table class="history-table"><thead><tr><th>Expense</th><th>Result</th><th>Date</th></tr></thead><tbody>${checks.map(c=>`<tr><td>${c.expense}</td><td style="color:${c.eligible==='yes'?'var(--accent)':c.eligible==='partial'?'var(--gold)':'var(--accent2)'};">${c.verdict}</td><td>${c.date||''}</td></tr>`).join('')}</tbody></table>` : '<div class="empty-state"><div class="empty-icon">&#10003;</div><div class="empty-title">No checks yet</div></div>';
+  document.getElementById('h-claims').innerHTML = claims.length ? `<table class="history-table"><thead><tr><th>Claim ID</th><th>Total</th><th>Date</th></tr></thead><tbody>${claims.map(c=>`<tr><td>${c.id||'CLM'}</td><td style="color:var(--accent);">$${(c.total||0).toFixed(2)}</td><td>${c.date||''}</td></tr>`).join('')}</tbody></table>` : '<div class="empty-state"><div class="empty-icon">&#128196;</div><div class="empty-title">No claims yet</div></div>';
+}
+
+// ── DASHBOARD UPDATE ──
+async function loadCheckHistoryFromDB() {
+  if (!user) return;
+  try {
+    // Load checks
+    const { data: checks } = await sb.from('check_history')
+      .select('*').eq('user_id', user.id)
+      .order('created_at', { ascending: false }).limit(30);
+
+    // Load analyses
+    const { data: analyses } = await sb.from('benefits_results')
+      .select('*').eq('user_id', user.id)
+      .order('created_at', { ascending: false }).limit(10);
+
+    // Load claims
+    const { data: claims } = await sb.from('claim_history')
+      .select('*').eq('user_id', user.id)
+      .order('created_at', { ascending: false }).limit(10);
+
+    // Rebuild historyLog from all Supabase sources
+    historyLog = [];
+    (checks || []).forEach(h => historyLog.push({ type: 'check', expense: h.expense, eligible: h.eligible, verdict: h.verdict, date: new Date(h.created_at).toLocaleDateString() }));
+    (analyses || []).forEach(a => historyLog.push({ type: 'analysis', employer: a.employer, total: a.total_opportunity || 0, date: new Date(a.created_at).toLocaleDateString() }));
+    (claims || []).forEach(c => historyLog.push({ type: 'claim', total: c.total_amount || 0, date: new Date(c.created_at).toLocaleDateString(), id: c.claim_number }));
+    historyLog.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Update check stats
+    if (checks?.length) {
+      checkHistory = checks.map(h => ({ expense: h.expense, eligible: h.eligible, verdict: h.verdict, date: new Date(h.created_at).toLocaleDateString() }));
+      totalChecks = checks.length;
+      document.getElementById('stat-checks').textContent = totalChecks;
+    }
+
+    // Update claimed stat from claim_history
+    if (claims?.length) {
+      totalSaved = claims.reduce((s, c) => s + (c.total_amount || 0), 0);
+      document.getElementById('stat-claimed').textContent = '$' + Math.round(totalSaved).toLocaleString();
+    }
+
+    renderHistory();
+    if (checkHistory.length) renderCheckHistory();
+  } catch(e) { console.log('Could not load history:', e); }
+}
+
+async function loadSavedResults() {
+  if (!user) return;
+  const { data } = await sb.from('benefits_results').select('*').eq('user_id',user.id).order('created_at',{ascending:false}).limit(1).single();
+  if (data?.raw_json) { benefits = data.raw_json; updateDashboard(data.raw_json); }
+}
+
+function updateDashboard(b) {
+  const total = b.total_opportunity || (b.actions||[]).reduce((s,a)=>s+(a.estimated_annual_value||0),0);
+  document.getElementById('stat-found').textContent = '$'+total.toLocaleString();
+  document.getElementById('stat-actions').textContent = (b.actions||[]).length;
+  document.getElementById('home-empty').style.display = 'none';
+  document.getElementById('home-loaded').style.display = 'block';
+  const colors = ['green','green','orange','gold'];
+  document.getElementById('home-actions').innerHTML = (b.actions||[]).map((a,i)=>`<div class="action-item"><div class="action-dot ${colors[i%4]}"></div><div style="flex:1;"><div class="action-title-text">${a.title}</div><div class="action-desc">${a.description}</div></div>${a.estimated_annual_value?`<div class="action-val">+$${Number(a.estimated_annual_value).toLocaleString()}/yr</div>`:''}</div>`).join('');
+  const det = [{label:'401k match',val:b['401k_match']||' - ',ok:!!b['401k_match']},{label:'HSA',val:b.hsa_available?'Available':'Not available',ok:b.hsa_available},{label:'FSA',val:b.fsa_available?'Available':'Not available',ok:b.fsa_available},{label:'Dental',val:b.dental?'Included':'Not found',ok:b.dental},{label:'Vision',val:b.vision?'Included':'Not found',ok:b.vision},{label:'Commuter',val:b.commuter_benefit?'$'+(b.commuter_monthly_limit||325)+'/mo':'Not found',ok:b.commuter_benefit}];
+  document.getElementById('home-benefits').innerHTML = det.map(d=>`<div class="action-item"><div class="action-dot ${d.ok?'green':'orange'}"></div><div class="action-title-text" style="flex:1;">${d.label}</div><div style="font-size:12px;color:var(--ink3);">${d.val}</div></div>`).join('');
+  const suggestions = [];
+  if (b.commuter_benefit) suggestions.push({ icon:'&#128652;', text:'Commuter benefit available  -  check your transit costs for eligibility', s:'checker' });
+  if (b.tuition_reimbursement>0) suggestions.push({ icon:'&#127979;', text:'$'+b.tuition_reimbursement.toLocaleString()+'/yr tuition benefit  -  have you claimed it?', s:'checker' });
+  if (b['401k_match']) suggestions.push({ icon:'&#128200;', text:'Check you are capturing your full 401k match with the calculator', s:'calculator' });
+  if (!b.hsa_available) suggestions.push({ icon:'&#127973;', text:'You may now qualify for HSA  -  rules expanded in 2026, check eligibility', s:'checker' });
+  if (suggestions.length) {
+    document.getElementById('suggestions-card').style.display = 'block';
+    document.getElementById('home-suggestions').innerHTML = suggestions.map(s=>`<div class="action-item" style="cursor:pointer;" onclick="gotoScreen(s.s)"><div style="font-size:18px;">${s.icon}</div><div class="action-desc" style="flex:1;color:var(--ink);">${s.text}</div><div style="color:var(--accent);font-size:12px;">&#8594;</div></div>`).join('');
+  }
+}
+
+// ── UTILS ──
+function toB64(f) { return new Promise((res,rej) => { const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(f); }); }
+
+async function saveResults(b) {
+  if (!user) return;
+  const total = b.total_opportunity||(b.actions||[]).reduce((s,a)=>s+(a.estimated_annual_value||0),0);
+  const { data: result } = await sb.from('benefits_results').insert({ user_id:user.id, employer:b.employer||'Unknown', raw_json:b, total_opportunity:total }).select().single();
+  if (result && b.actions?.length) await sb.from('benefit_actions').insert(b.actions.map(a=>({ user_id:user.id, result_id:result.id, title:a.title, description:a.description, estimated_value:a.estimated_annual_value||0, priority:a.priority||'medium' })));
+}
+
+function showErr(msg) {
+  const e = document.createElement('div');
+  e.style.cssText = 'background:#FCEBEB;border:1px solid #F09595;border-radius:10px;padding:13px;font-size:13px;color:#791F1F;margin-top:10px;';
+  e.textContent = msg;
+  document.getElementById('analyzer-s1').appendChild(e);
+  setTimeout(() => e.remove(), 8000);
+}
+
+function exportSummary() {
+  var summary = '<h1>BenefAgent Year Summary</h1>';
+  summary += '<p>Generated: ' + new Date().toLocaleDateString() + '</p>';
+  summary += '<h2>Total Found: $' + totalSaved.toLocaleString() + '</h2>';
+  summary += '<h2>Expense Checks: ' + totalChecks + '</h2>';
+  if (historyLog.length) {
+    summary += '<h2>Recent Activity</h2><ul>';
+    historyLog.slice(0, 10).forEach(function(h) { summary += '<li>' + (h.expense || h.employer || 'Activity') + '</li>'; });
+    summary += '</ul>';
+  }
+  var w = window.open('', '_blank');
+  w.document.write('<!DOCTYPE html><html><head><title>BenefAgent Summary</title><style>body{font-family:sans-serif;padding:40px;max-width:800px;margin:0 auto;}</style></head><body>' + summary + '</body></html>');
+  w.document.close();
+  setTimeout(function() { w.print(); }, 500);
+}
+
+
+
+
+function showToast(msg, duration = 3000) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;top:20px;right:20px;background:#0e0e0d;color:white;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;max-width:280px;line-height:1.4;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:fadeUp .3s ease;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), duration);
+}
+
+// Hide install button if already installed
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    var ni = document.getElementById('nav-install');
+    if (ni) ni.style.display = 'none';
+  }
+});
+
+
+// -- PWA INSTALL --
+var _installPrompt = null;
+
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  _installPrompt = e;
+  if (!localStorage.getItem('ba_pwa_dismissed')) {
+    setTimeout(function() {
+      var banner = document.getElementById('pwa-banner');
+      if (banner) banner.style.display = 'flex';
+    }, 3000);
+  }
+});
+
+window.addEventListener('appinstalled', function() {
+  _installPrompt = null;
+  var banner = document.getElementById('pwa-banner');
+  if (banner) banner.style.display = 'none';
+  var ni = document.getElementById('nav-install');
+  if (ni) ni.style.display = 'none';
+});
+
+async function triggerPWAInstall() {
+  if (_installPrompt) {
+    _installPrompt.prompt();
+    await _installPrompt.userChoice;
+    _installPrompt = null;
+    dismissPWABanner();
+  } else {
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    var isInstalled = window.matchMedia('(display-mode: standalone)').matches;
+    if (isInstalled) {
+      showToast('BenefAgent is already installed!');
+    } else if (isIOS) {
+      showToast('Tap Share then Add to Home Screen');
+    } else {
+      showToast('Open in Chrome to install the app');
+    }
+  }
+}
+
+function dismissPWABanner() {
+  localStorage.setItem('ba_pwa_dismissed', '1');
+  var banner = document.getElementById('pwa-banner');
+  if (banner) banner.style.display = 'none';
+}
+
+init();
+</script>
+
+<!-- UPGRADE SIDEBAR PANEL -->
+
+</body>
+</html>

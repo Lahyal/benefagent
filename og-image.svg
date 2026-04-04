@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0e0e0d"/>
+      <stop offset="100%" style="stop-color:#1a2a1f"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1a7a5e"/>
+      <stop offset="100%" style="stop-color:#0d4a38"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Subtle grid pattern -->
+  <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+    <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+  </pattern>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+
+  <!-- Green accent circle (top right) -->
+  <circle cx="1050" cy="120" r="300" fill="rgba(26,122,94,0.08)"/>
+  <circle cx="1050" cy="120" r="200" fill="rgba(26,122,94,0.06)"/>
+
+  <!-- Left accent bar -->
+  <rect x="80" y="80" width="4" height="80" rx="2" fill="#1a7a5e"/>
+
+  <!-- Logo -->
+  <text x="96" y="132" font-family="Georgia, serif" font-size="36" font-weight="600" fill="#f5f2eb" letter-spacing="-0.5">Benef</text>
+  <text x="222" y="132" font-family="Georgia, serif" font-size="36" font-weight="600" fill="#1a7a5e" letter-spacing="-0.5">Agent</text>
+
+  <!-- Main headline -->
+  <text x="80" y="260" font-family="Georgia, serif" font-size="72" font-weight="700" fill="#f5f2eb" letter-spacing="-2">Stop leaving</text>
+  <text x="80" y="350" font-family="Georgia, serif" font-size="72" font-weight="700" fill="#1a7a5e" letter-spacing="-2" font-style="italic">thousands</text>
+  <text x="530" y="350" font-family="Georgia, serif" font-size="72" font-weight="700" fill="#f5f2eb" letter-spacing="-2"> on the table</text>
+
+  <!-- Subheadline -->
+  <text x="80" y="420" font-family="'Helvetica Neue', sans-serif" font-size="24" font-weight="300" fill="rgba(245,242,235,0.55)">AI-powered employee benefits optimizer — find every dollar in minutes</text>
+
+  <!-- Stats row -->
+  <rect x="80" y="470" width="200" height="80" rx="12" fill="rgba(26,122,94,0.15)" stroke="rgba(26,122,94,0.3)" stroke-width="1"/>
+  <text x="180" y="508" font-family="Georgia, serif" font-size="28" font-weight="700" fill="#f5f2eb" text-anchor="middle">$8,400</text>
+  <text x="180" y="530" font-family="'Helvetica Neue', sans-serif" font-size="13" fill="rgba(245,242,235,0.45)" text-anchor="middle">avg. found per user</text>
+
+  <rect x="300" y="470" width="200" height="80" rx="12" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="400" y="508" font-family="Georgia, serif" font-size="28" font-weight="700" fill="#f5f2eb" text-anchor="middle">9 min</text>
+  <text x="400" y="530" font-family="'Helvetica Neue', sans-serif" font-size="13" fill="rgba(245,242,235,0.45)" text-anchor="middle">to full action plan</text>
+
+  <rect x="520" y="470" width="200" height="80" rx="12" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="620" y="508" font-family="Georgia, serif" font-size="28" font-weight="700" fill="#f5f2eb" text-anchor="middle">Free</text>
+  <text x="620" y="530" font-family="'Helvetica Neue', sans-serif" font-size="13" fill="rgba(245,242,235,0.45)" text-anchor="middle">to get started</text>
+
+  <!-- CTA pill -->
+  <rect x="80" y="570" width="220" height="42" rx="21" fill="#1a7a5e"/>
+  <text x="190" y="596" font-family="'Helvetica Neue', sans-serif" font-size="15" font-weight="500" fill="white" text-anchor="middle">benefagent.com</text>
+
+  <!-- Decorative elements -->
+  <circle cx="1100" cy="550" r="60" fill="none" stroke="rgba(26,122,94,0.2)" stroke-width="1"/>
+  <circle cx="1100" cy="550" r="40" fill="none" stroke="rgba(26,122,94,0.15)" stroke-width="1"/>
+  <circle cx="1100" cy="550" r="20" fill="rgba(26,122,94,0.1)"/>
+</svg>
