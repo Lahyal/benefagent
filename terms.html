@@ -10,9 +10,34 @@
 
   gtag('config', 'G-ZHN3JD4ZP8');
 </script>
-<!-- Reddit Pixel -->
+<!-- Reddit Pixel — Step 2: load pixel.js -->
 <script>
-!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_it5s0lq0vi19",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt('init','a2_it5s0lq0vi19');rdt('track', 'PageVisit');
+!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_it5s0lq0vi19",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);
+</script>
+<script>
+(function () {
+  var REDDIT_PIXEL_ID = 'a2_it5s0lq0vi19';
+  function matchKeys(m) {
+    if (!m) return {};
+    var o = {};
+    if (m.email) o.email = m.email;
+    if (m.phoneNumber) o.phoneNumber = m.phoneNumber;
+    if (m.externalId) o.externalId = m.externalId;
+    return o;
+  }
+  var fired = false;
+  window.baRedditPixelFireOnce = function (m) {
+    if (fired) return;
+    fired = true;
+    rdt('init', REDDIT_PIXEL_ID, matchKeys(m));
+    rdt('track', 'PageVisit');
+  };
+  window.baRedditConversion = function (eventName, payload) {
+    if (typeof rdt !== 'function') return;
+    rdt('track', eventName, payload || {});
+  };
+  window.baRedditPixelFireOnce({});
+})();
 </script>
 <!-- DO NOT MODIFY UNLESS TO REPLACE A USER IDENTIFIER -->
 <!-- End Reddit Pixel -->

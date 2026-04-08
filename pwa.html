@@ -10,9 +10,34 @@
 
   gtag('config', 'G-ZHN3JD4ZP8');
 </script>
-<!-- Reddit Pixel -->
+<!-- Reddit Pixel — Step 2: load pixel.js -->
 <script>
-!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_it5s0lq0vi19",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt('init','a2_it5s0lq0vi19');rdt('track', 'PageVisit');
+!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_it5s0lq0vi19",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);
+</script>
+<!-- Step 3–4: advanced matching; PageVisit once after session (see init) -->
+<script>
+(function () {
+  var REDDIT_PIXEL_ID = 'a2_it5s0lq0vi19';
+  function matchKeys(m) {
+    if (!m) return {};
+    var o = {};
+    if (m.email) o.email = m.email;
+    if (m.phoneNumber) o.phoneNumber = m.phoneNumber;
+    if (m.externalId) o.externalId = m.externalId;
+    return o;
+  }
+  var fired = false;
+  window.baRedditPixelFireOnce = function (m) {
+    if (fired) return;
+    fired = true;
+    rdt('init', REDDIT_PIXEL_ID, matchKeys(m));
+    rdt('track', 'PageVisit');
+  };
+  window.baRedditConversion = function (eventName, payload) {
+    if (typeof rdt !== 'function') return;
+    rdt('track', eventName, payload || {});
+  };
+})();
 </script>
 <!-- DO NOT MODIFY UNLESS TO REPLACE A USER IDENTIFIER -->
 <!-- End Reddit Pixel -->
@@ -659,6 +684,9 @@ async function init() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = 'login.html'; return; }
   user = session.user;
+  if (typeof window.baRedditPixelFireOnce === 'function') {
+    window.baRedditPixelFireOnce({ email: user.email, externalId: user.id });
+  }
 
   const initials = (user.user_metadata?.full_name || user.email || '?')[0].toUpperCase();
   document.getElementById('avatar-btn').textContent = initials;
@@ -675,9 +703,15 @@ async function init() {
   if (params.get('payment') === 'success') {
     history.replaceState({}, '', 'pwa.html');
     let attempts = 0;
+    let purchaseTracked = false;
     const poll = setInterval(async () => {
       attempts++;
       await loadUserPlan();
+      if ((userPlan === 'pro' || userPlan === 'team') && !purchaseTracked && typeof rdt === 'function') {
+        purchaseTracked = true;
+        var cid = 'purchase_' + user.id + '_' + Date.now();
+        rdt('track', 'Purchase', { conversionId: cid, value: 12, currency: 'USD' });
+      }
       if (userPlan === 'pro' || userPlan === 'team' || attempts >= 4) {
         clearInterval(poll);
         if (userPlan === 'pro' || userPlan === 'team') {
