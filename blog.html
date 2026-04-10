@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Benefits Blog — BenefAgent</title>
+<meta name="description" content="Expert guides on HSA, FSA, 401k, and employee benefits. Learn how to find and claim every dollar you're owed.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231a7a5e'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='18' font-family='serif' fill='white'>B</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--ink:#0e0e0d;--ink2:#3a3a36;--ink3:#7a7a72;--paper:#f5f2eb;--paper2:#ede9df;--accent:#1a7a5e;--accent2:#d4541a;--font-display:'DM Serif Display',serif;--font-body:'DM Sans',sans-serif;}
+body{font-family:var(--font-body);background:var(--paper);color:var(--ink);}
+nav{background:var(--paper);border-bottom:1px solid rgba(14,14,13,.08);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.nav-logo{font-family:var(--font-display);font-size:20px;color:var(--ink);text-decoration:none;}
+.nav-logo span{color:var(--accent);}
+.nav-right{display:flex;align-items:center;gap:20px;}
+.nav-right a{font-size:13px;color:var(--ink3);text-decoration:none;}
+.nav-right a:hover{color:var(--accent);}
+.nav-cta{background:var(--accent);color:white!important;padding:8px 18px;border-radius:8px;font-weight:500;}
+.nav-cta:hover{opacity:.88;}
+.hero{padding:80px 24px 60px;text-align:center;max-width:720px;margin:0 auto;}
+.hero-label{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:16px;}
+.hero h1{font-family:var(--font-display);font-size:clamp(36px,5vw,56px);line-height:1.1;color:var(--ink);margin-bottom:16px;}
+.hero p{font-size:17px;color:var(--ink3);font-weight:300;line-height:1.7;}
+.container{max-width:1080px;margin:0 auto;padding:0 24px 80px;}
+.section-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);margin-bottom:24px;}
+.featured{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:60px;}
+.card-featured{background:var(--ink);border-radius:16px;padding:36px;text-decoration:none;display:block;transition:transform .2s;}
+.card-featured:hover{transform:translateY(-3px);}
+.card-featured .tag{display:inline-block;background:rgba(26,122,94,.3);color:#6edbb8;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:100px;margin-bottom:16px;}
+.card-featured h2{font-family:var(--font-display);font-size:26px;color:white;line-height:1.25;margin-bottom:10px;}
+.card-featured p{font-size:14px;color:rgba(245,242,235,.5);line-height:1.6;font-weight:300;margin-bottom:20px;}
+.card-featured .meta{font-size:12px;color:rgba(245,242,235,.3);}
+.card-featured.accent{background:var(--accent);}
+.card-featured.accent .tag{background:rgba(255,255,255,.2);color:white;}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:60px;}
+.card{background:white;border-radius:14px;padding:28px;text-decoration:none;display:block;border:1px solid rgba(14,14,13,.07);transition:all .2s;}
+.card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 32px rgba(26,122,94,.1);}
+.card .tag{display:inline-block;background:rgba(26,122,94,.08);color:var(--accent);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:100px;margin-bottom:14px;}
+.card .tag.orange{background:rgba(212,84,26,.08);color:var(--accent2);}
+.card h3{font-family:var(--font-display);font-size:20px;color:var(--ink);line-height:1.3;margin-bottom:8px;}
+.card p{font-size:13px;color:var(--ink3);line-height:1.6;font-weight:300;margin-bottom:16px;}
+.card .meta{font-size:11px;color:var(--ink3);}
+.cta-banner{background:var(--ink);border-radius:20px;padding:48px;text-align:center;margin-bottom:60px;}
+.cta-banner h2{font-family:var(--font-display);font-size:36px;color:white;margin-bottom:12px;}
+.cta-banner p{font-size:16px;color:rgba(245,242,235,.5);font-weight:300;margin-bottom:28px;}
+.cta-banner a{background:var(--accent);color:white;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:500;font-size:15px;}
+.cta-banner a:hover{opacity:.88;}
+footer{background:var(--ink);padding:40px 24px;text-align:center;}
+.footer-logo{font-family:var(--font-display);font-size:22px;color:white;margin-bottom:12px;}
+.footer-logo span{color:#c9a84c;}
+.footer-links{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;}
+.footer-links a{font-size:13px;color:rgba(245,242,235,.35);text-decoration:none;}
+.footer-copy{font-size:12px;color:rgba(245,242,235,.2);}
+@media(max-width:768px){.featured{grid-template-columns:1fr;}.grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">Benef<span>Agent</span></a>
+  <div class="nav-right">
+    <a href="index.html">Home</a>
+    <a href="index.html#pricing">Pricing</a>
+    <a href="login.html" class="nav-cta">Get started</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-label">The Benefits Blog</div>
+  <h1>Stop leaving money <em>on the table</em></h1>
+  <p>Practical guides on HSA, FSA, 401k, and everything in your employee benefits package — written so you can actually use it.</p>
+</div>
+
+<div class="container">
+  <div class="section-label">Featured articles</div>
+  <div class="featured">
+    <a href="blog/hsa-fsa-eligible-expenses-2026.html" class="card-featured">
+      <div class="tag">HSA / FSA</div>
+      <h2>HSA & FSA Eligible Expenses 2026: The Complete List</h2>
+      <p>Everything from sunscreen to therapy — the full IRS-approved list with the surprises most people miss.</p>
+      <div class="meta">8 min read &middot; Updated April 2026</div>
+    </a>
+    <a href="blog/401k-employer-match.html" class="card-featured accent">
+      <div class="tag">401k</div>
+      <h2>401k Employer Match: How to Get Every Dollar You're Owed</h2>
+      <p>1 in 4 employees misses their full match. That's an instant 100% return — left on the table every paycheck.</p>
+      <div class="meta">6 min read &middot; Updated April 2026</div>
+    </a>
+  </div>
+
+  <div class="section-label">All articles</div>
+  <div class="grid">
+    <a href="blog/fsa-deadline-2026.html" class="card">
+      <div class="tag orange">FSA</div>
+      <h3>FSA Deadline 2026: What Happens If You Don't Use It</h3>
+      <p>Use-it-or-lose-it is real. Here's how to spend down your FSA before December 31st.</p>
+      <div class="meta">5 min read</div>
+    </a>
+    <a href="blog/how-to-submit-hsa-claim.html" class="card">
+      <div class="tag">HSA</div>
+      <h3>How to Submit an HSA Claim: Step by Step</h3>
+      <p>Most people pay out of pocket and forget to reimburse themselves. Here's the exact process.</p>
+      <div class="meta">5 min read</div>
+    </a>
+    <a href="blog/hsa-vs-fsa.html" class="card">
+      <div class="tag">HSA / FSA</div>
+      <h3>HSA vs FSA: Which One Is Right for You in 2026</h3>
+      <p>Same initials, very different rules. Here's how to choose — and how to use both if you have them.</p>
+      <div class="meta">6 min read</div>
+    </a>
+    <a href="blog/hsa-contribution-limits-2026.html" class="card">
+      <div class="tag">HSA</div>
+      <h3>2026 HSA Contribution Limits: Individual, Family & Catch-Up</h3>
+      <p>The IRS raised limits again. Here's exactly how much you can contribute and why you should max it out.</p>
+      <div class="meta">4 min read</div>
+    </a>
+    <a href="blog/hdhp-hsa-qualify.html" class="card">
+      <div class="tag">HSA</div>
+      <h3>What Is an HDHP and Do You Qualify for an HSA?</h3>
+      <p>The 2026 rule changes mean more people qualify than ever — including bronze and catastrophic plan holders.</p>
+      <div class="meta">5 min read</div>
+    </a>
+    <a href="blog/surprising-hsa-eligible-expenses.html" class="card">
+      <div class="tag">HSA / FSA</div>
+      <h3>Sunscreen, Therapy, Gym: What's Actually HSA Eligible in 2026</h3>
+      <p>The list is longer than you think. Many people never claim these common eligible expenses.</p>
+      <div class="meta">7 min read</div>
+    </a>
+    <a href="blog/how-to-read-benefits-pdf.html" class="card">
+      <div class="tag orange">Benefits</div>
+      <h3>How to Read Your Employee Benefits PDF (And What to Look For)</h3>
+      <p>That 40-page document your HR sent has thousands of dollars hidden in it. Here's how to find them.</p>
+      <div class="meta">6 min read</div>
+    </a>
+    <a href="blog/open-enrollment-checklist-2026.html" class="card">
+      <div class="tag orange">Benefits</div>
+      <h3>Benefits Open Enrollment 2026: The 9-Minute Checklist</h3>
+      <p>Most people click through in 3 minutes and leave thousands unclaimed. Don't be most people.</p>
+      <div class="meta">5 min read</div>
+    </a>
+    <a href="blog/average-employee-leaves-8400.html" class="card">
+      <div class="tag orange">Research</div>
+      <h3>The Average Employee Leaves $8,400 in Benefits Unclaimed Every Year</h3>
+      <p>Here's why it happens, and a simple process to stop doing it.</p>
+      <div class="meta">5 min read</div>
+    </a>
+    <a href="blog/new-hsa-rules-2026.html" class="card">
+      <div class="tag">HSA</div>
+      <h3>New 2026 HSA Rules: Bronze and Catastrophic Plans Now Qualify</h3>
+      <p>The biggest HSA eligibility expansion in years. Millions of people newly qualify — do you?</p>
+      <div class="meta">4 min read</div>
+    </a>
+    <a href="blog/commuter-benefits-explained.html" class="card">
+      <div class="tag orange">Benefits</div>
+      <h3>Commuter Benefits: How to Save $300/Month Pre-Tax</h3>
+      <p>Transit and parking benefits are one of the most overlooked tax breaks in your benefits package.</p>
+      <div class="meta">5 min read</div>
+    </a>
+  </div>
+
+  <div class="cta-banner">
+    <h2>Check any expense in seconds</h2>
+    <p>Type any product or service — BenefAgent tells you instantly if it's HSA or FSA eligible, with IRS citations.</p>
+    <a href="login.html">Try it free for 2 days &rarr;</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">Benef<span>Agent</span></div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="blog.html">Blog</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+    <a href="mailto:support@benefagent.com">Contact</a>
+  </div>
+  <p class="footer-copy">&copy; 2026 BenefAgent. All rights reserved.</p>
+</footer>
+</body>
+</html>
