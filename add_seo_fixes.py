@@ -29,6 +29,16 @@ articles = {
     "does-401k-employer-match-count-as-income.html": {"title": "Does Your 401k Employer Match Count as Taxable Income?",                               "topics": ["401k","match","income","tax"]},
     "does-employer-match-count-toward-401k-limit.html":{"title": "Does Employer 401k Match Count Toward the $23,500 Contribution Limit?",              "topics": ["401k","match","limit"]},
     "do-employers-match-catch-up-contributions.html":{"title": "Do Employers Match 401k Catch-Up Contributions?",                                       "topics": ["401k","match","catch-up"]},
+    "can-i-pay-medical-bill-with-hsa.html":          {"title": "Can I Pay a Medical Bill with My HSA?",                                                "topics": ["hsa","claim","reimbursement","medical"]},
+    "fsa-grace-period-2026.html":                    {"title": "FSA Grace Period 2026: Do You Have Extra Time to Spend?",                              "topics": ["fsa","deadline","grace","rollover"]},
+    "fsa-use-it-or-lose-it-rules-2026.html":         {"title": "FSA Use It or Lose It Rules 2026: What You Need to Know",                              "topics": ["fsa","deadline","rules","rollover"]},
+    "how-to-maximize-401k-employer-match.html":      {"title": "How to Maximize Your 401k Employer Match in 2026",                                     "topics": ["401k","match","employer","maximize"]},
+    "how-to-reimburse-yourself-from-hsa.html":       {"title": "How to Reimburse Yourself from Your HSA: Step by Step",                                "topics": ["hsa","claim","reimbursement"]},
+    "hsa-reimbursement-deadline.html":               {"title": "HSA Reimbursement Deadline: How Long Do You Have?",                                    "topics": ["hsa","deadline","reimbursement","rules"]},
+    "is-minoxidil-hsa-eligible.html":                {"title": "Is Minoxidil HSA or FSA Eligible in 2026?",                                            "topics": ["hsa","fsa","eligible","expenses"]},
+    "is-ozempic-hsa-eligible.html":                  {"title": "Is Ozempic or Wegovy HSA or FSA Eligible in 2026?",                                    "topics": ["hsa","fsa","eligible","expenses","prescription"]},
+    "is-therapy-hsa-eligible.html":                  {"title": "Is Therapy HSA or FSA Eligible in 2026?",                                              "topics": ["hsa","fsa","eligible","expenses","therapy"]},
+    "what-is-a-good-401k-match.html":                {"title": "What Is a Good 401k Employer Match? (2026 Benchmarks)",                                "topics": ["401k","match","employer","benchmark"]},
 }
 
 AUTHOR_SCHEMA = '''  <script type="application/ld+json">
