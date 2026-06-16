@@ -54,6 +54,7 @@
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%231a7a5e'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='110' font-family='serif' fill='white'>B</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<script src="/js/supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -601,6 +602,13 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
 </nav>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+const SUPABASE_URL = window.BENEFAGENT_SUPABASE.url;
+const SUPABASE_ANON_KEY = window.BENEFAGENT_SUPABASE.anonKey;
+const AI = SUPABASE_URL + '/functions/v1/ai-agent';
+const AUTH = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY };
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const STRIPE_FN = SUPABASE_URL + '/functions/v1/stripe-webhook';
+
 // ── TRIAL & SUBSCRIPTION ─────────────────────────────────────────────────
 let userPlan = 'none';
 let trialEndsAt = null;
@@ -666,12 +674,6 @@ async function upgradePlanPwa(plan) {
     window.location.href = data.url;
   } catch(err) { alert('Could not start checkout: ' + err.message); }
 }
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsYndxaHJua2JvYnRkZmFjbHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNTU0NzksImV4cCI6MjA4ODkzMTQ3OX0.qacUYmr2j7jpe-RhWeOpRt02vWUD8uwlhn9UB_fOv7M';
-const AI = SUPABASE_URL + '/functions/v1/ai-agent';
-const AUTH = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY };
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const STRIPE_FN = SUPABASE_URL + '/functions/v1/stripe-webhook';
-
 let user = null, benefits = null, claimItems = [], checkHistory = [], userProfile = {}, totalChecks = 0;
 let deferredInstall = null;
 

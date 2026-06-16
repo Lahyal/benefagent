@@ -1,0 +1,11 @@
+{
+  "name": "benefagent",
+  "private": true,
+  "scripts": {
+    "supabase:config": "node scripts/generate-supabase-config.js",
+    "supabase:deploy": "bash scripts/deploy-supabase.sh"
+  },
+  "devDependencies": {
+    "supabase": "^2.30.4"
+  }
+}

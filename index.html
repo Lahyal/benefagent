@@ -755,6 +755,7 @@
   }
 @media(max-width:768px){.seo-grid{grid-template-columns:1fr !important;}}
 </style>
+<script src="/js/supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   /* ── AUTH MODAL ── */
@@ -1678,11 +1679,9 @@
 </style>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-// ---- SUPABASE CONFIG ----
-// Replace these with your actual values from:
-// supabase.com/dashboard -> your project -> Settings -> API
-const SUPABASE_URL = 'https://ulbwqhrnkbobtdfaclxv.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsYndxaHJua2JvYnRkZmFjbHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNTU0NzksImV4cCI6MjA4ODkzMTQ3OX0.qacUYmr2j7jpe-RhWeOpRt02vWUD8uwlhn9UB_fOv7M';
+// ---- SUPABASE CONFIG (js/supabase-config.js) ----
+const SUPABASE_URL = window.BENEFAGENT_SUPABASE.url;
+const SUPABASE_ANON_KEY = window.BENEFAGENT_SUPABASE.anonKey;
 const EDGE_FN_URL = SUPABASE_URL + '/functions/v1/analyze-benefits';
 
 // ---- SUPABASE CLIENT ----
@@ -2428,8 +2427,8 @@ function toggleMobileMenu() {
 <script>
 async function checkAuthAndOpen(e) {
   // Check if user is logged in
-  const sbUrl = 'https://ulbwqhrnkbobtdfaclxv.supabase.co';
-  const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsYndxaHJua2JvYnRkZmFjbHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNTU0NzksImV4cCI6MjA4ODkzMTQ3OX0.qacUYmr2j7jpe-RhWeOpRt02vWUD8uwlhn9UB_fOv7M';
+  const sbUrl = window.BENEFAGENT_SUPABASE.url;
+  const sbKey = window.BENEFAGENT_SUPABASE.anonKey;
   // Check localStorage for Supabase session
   const sessionKey = Object.keys(localStorage).find(k => k.includes('auth-token') || k.includes('supabase.auth'));
   if (!sessionKey) {
