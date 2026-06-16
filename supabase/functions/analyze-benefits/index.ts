@@ -1,11 +1,11 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import {
   buildDocumentContent,
-  callAnthropic,
+  callOpenAI,
   handleOptions,
   jsonResponse,
   parseJsonFromText,
-} from '../_shared/anthropic.ts';
+} from '../_shared/openai.ts';
 
 const ANALYZE_SYSTEM = `You are an expert employee benefits analyst. Analyze the uploaded benefits document and return ONLY valid JSON (no markdown) with this shape:
 {
@@ -44,7 +44,7 @@ serve(async (req) => {
     const ctx = userContext || {};
     const contextText = `User context: salary=${ctx.salary || 'unknown'}, 401k contribution=${ctx.contrib || 'unknown'}, family=${ctx.family || 'single'}, commute=${ctx.commute || 'unknown'}.`;
 
-    const raw = await callAnthropic(
+    const raw = await callOpenAI(
       ANALYZE_SYSTEM,
       [
         ...buildDocumentContent(fileData, mediaType),

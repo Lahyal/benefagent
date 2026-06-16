@@ -1,11 +1,11 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import {
   buildDocumentContent,
-  callAnthropic,
+  callOpenAI,
   handleOptions,
   jsonResponse,
   parseJsonFromText,
-} from '../_shared/anthropic.ts';
+} from '../_shared/openai.ts';
 
 const SYSTEMS: Record<string, string> = {
   analyze_benefits: `You are an expert employee benefits analyst. Return ONLY valid JSON with employer, summary, total_opportunity, 401k_match, hsa_available, fsa_available, fsa_limit, commuter_benefit, commuter_monthly_limit, tuition_reimbursement, gym_reimbursement, and actions array (title, description, estimated_annual_value, priority).`,
@@ -14,7 +14,7 @@ const SYSTEMS: Record<string, string> = {
 {"eligible":"yes"|"partial"|"no","verdict":"short line","explanation":"2-3 sentences","conditions":"","estimated_annual_savings":0,"irs_reference":""}`,
 
   scan_receipt: `You read receipts for HSA/FSA claims. Return ONLY JSON:
-{"merchant":"","date":"","amount":0,"description":"","eligible":"yes"|"partial"|"no","verdict":"","explanation":"","account_type":""}`,
+{"merchant":"","date":"","amount":0,"description":"","eligible":"yes"|"partial"|"no","verdict":"","explanation":"","account_type":"","store":"","total":0,"eligible_total":0,"summary":"","items":[{"name":"","amount":0,"eligible":"yes"|"partial"|"no","reason":""}]}`,
 
   build_claim: `You build HSA/FSA reimbursement claim forms. Return ONLY JSON:
 {"claim_number":"CLM-XXXX","claimant":"","member_id":"","employer":"","account_type":"","submission_date":"","line_items":[{"date":"","provider":"","description":"","amount":0}],"total_amount":0,"submission_instructions":""}`,
@@ -53,7 +53,7 @@ serve(async (req) => {
       return jsonResponse({ error: 'Invalid action payload' }, 400);
     }
 
-    const raw = await callAnthropic(SYSTEMS[action], userContent, action === 'analyze_benefits' ? 8192 : 2048);
+    const raw = await callOpenAI(SYSTEMS[action], userContent, action === 'analyze_benefits' ? 8192 : 2048);
     const result = parseJsonFromText(raw);
     return jsonResponse(result);
   } catch (e) {

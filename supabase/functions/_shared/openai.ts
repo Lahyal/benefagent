@@ -17,37 +17,40 @@ export function handleOptions(req: Request) {
   return null;
 }
 
-export async function callAnthropic(
+export async function callOpenAI(
   system: string,
   userContent: unknown,
   maxTokens = 4096,
 ): Promise<string> {
-  const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not configured');
+  const apiKey = Deno.env.get('OPENAI_API_KEY');
+  if (!apiKey) throw new Error('OPENAI_API_KEY is not configured');
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const model = Deno.env.get('OPENAI_MODEL') || 'gpt-4o';
+
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model,
       max_tokens: maxTokens,
-      system,
-      messages: [{ role: 'user', content: userContent }],
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: userContent },
+      ],
+      response_format: { type: 'json_object' },
     }),
   });
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Anthropic API error ${res.status}: ${err.slice(0, 300)}`);
+    throw new Error(`OpenAI API error ${res.status}: ${err.slice(0, 300)}`);
   }
 
   const data = await res.json();
-  const blocks = data.content || [];
-  return blocks.map((b: { text?: string }) => b.text || '').join('');
+  return data.choices?.[0]?.message?.content || '';
 }
 
 export function parseJsonFromText(raw: string): unknown {
@@ -61,20 +64,36 @@ export function parseJsonFromText(raw: string): unknown {
   }
 }
 
+function fileBlock(filename: string, mediaType: string, fileData: string) {
+  return {
+    type: 'file',
+    file: {
+      filename,
+      file_data: `data:${mediaType};base64,${fileData}`,
+    },
+  };
+}
+
 export function buildDocumentContent(fileData: string, mediaType: string) {
-  if (mediaType === 'application/pdf' || mediaType.includes('wordprocessing')) {
+  if (mediaType === 'application/pdf') {
     return [
-      {
-        type: 'document',
-        source: { type: 'base64', media_type: mediaType, data: fileData },
-      },
+      fileBlock('benefits.pdf', mediaType, fileData),
       { type: 'text', text: 'Analyze this employee benefits document.' },
     ];
   }
+
+  if (mediaType.includes('wordprocessing') || mediaType === 'application/msword') {
+    const ext = mediaType.includes('openxml') ? 'benefits.docx' : 'benefits.doc';
+    return [
+      fileBlock(ext, mediaType, fileData),
+      { type: 'text', text: 'Analyze this employee benefits document.' },
+    ];
+  }
+
   return [
     {
-      type: 'image',
-      source: { type: 'base64', media_type: mediaType, data: fileData },
+      type: 'image_url',
+      image_url: { url: `data:${mediaType};base64,${fileData}` },
     },
     { type: 'text', text: 'Analyze this employee benefits document or receipt.' },
   ];

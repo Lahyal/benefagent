@@ -52,8 +52,11 @@ export SUPABASE_ACCESS_TOKEN
 "$SUPABASE_BIN" functions deploy ai-agent --no-verify-jwt
 "$SUPABASE_BIN" functions deploy stripe-webhook --no-verify-jwt
 
-if [[ -n "${ANTHROPIC_API_KEY:-}" ]]; then
-  "$SUPABASE_BIN" secrets set ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY"
+if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+  "$SUPABASE_BIN" secrets set OPENAI_API_KEY="$OPENAI_API_KEY"
+fi
+if [[ -n "${OPENAI_MODEL:-}" ]]; then
+  "$SUPABASE_BIN" secrets set OPENAI_MODEL="$OPENAI_MODEL"
 fi
 if [[ -n "${STRIPE_SECRET_KEY:-}" ]]; then
   "$SUPABASE_BIN" secrets set STRIPE_SECRET_KEY="$STRIPE_SECRET_KEY"
