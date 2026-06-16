@@ -119,7 +119,7 @@
     --radius: 12px;
     --font-display: 'DM Serif Display', serif;
     --font-body: 'DM Sans', sans-serif;
-    --site-header-h: 110px;
+    --nav-h: 60px;
   }
 
   html { scroll-behavior: smooth; }
@@ -131,18 +131,26 @@
     overflow-x: hidden;
   }
 
-  /* ── SITE HEADER (announcement + nav) ── */
-  .site-header {
+  /* ── FIXED NAV ── */
+  .site-nav {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 100;
+    background: var(--paper);
+    border-bottom: 1px solid rgba(14,14,13,0.08);
+  }
+  .nav-spacer {
+    height: var(--nav-h);
+    flex-shrink: 0;
   }
   .announce-banner {
     background: var(--accent);
     padding: 10px 24px;
     text-align: center;
+    position: relative;
+    z-index: 1;
   }
   .announce-banner p {
     font-size: 13px;
@@ -155,18 +163,11 @@
     font-weight: 600;
     text-decoration: underline;
   }
-  .site-header-spacer {
-    height: var(--site-header-h);
-    flex-shrink: 0;
-  }
 
   /* ── NAV ── */
   nav {
-    position: relative;
     display: flex; align-items: center; justify-content: space-between;
     padding: 18px 48px;
-    background: var(--paper);
-    border-bottom: 1px solid rgba(14,14,13,0.08);
   }
   .nav-logo {
     font-family: var(--font-display);
@@ -840,8 +841,8 @@
 </head>
 <body>
 
-<!-- SITE HEADER -->
-<header class="site-header" id="site-header">
+<!-- FIXED NAV -->
+<header class="site-nav" id="site-nav">
   <nav>
     <a href="#" class="nav-logo">Benef<span>Agent</span></a>
     <div class="nav-links">
@@ -861,24 +862,18 @@
       <span></span><span></span><span></span>
     </button>
   </nav>
-  <div class="announce-banner">
-    <p>&#127381; <strong>New for 2026:</strong> More people qualify for HSA than ever — bronze &amp; catastrophic plans now eligible. <a href="login.html">Check your eligibility &rarr;</a></p>
-  </div>
 </header>
 
 <script>
 (function () {
-  function syncSiteHeaderHeight() {
-    var el = document.getElementById('site-header');
+  function syncNavHeight() {
+    var el = document.getElementById('site-nav');
     if (!el) return;
-    document.documentElement.style.setProperty('--site-header-h', el.offsetHeight + 'px');
+    document.documentElement.style.setProperty('--nav-h', el.offsetHeight + 'px');
   }
-  syncSiteHeaderHeight();
-  document.addEventListener('DOMContentLoaded', syncSiteHeaderHeight);
-  window.addEventListener('resize', syncSiteHeaderHeight);
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(syncSiteHeaderHeight);
-  }
+  syncNavHeight();
+  document.addEventListener('DOMContentLoaded', syncNavHeight);
+  window.addEventListener('resize', syncNavHeight);
 })();
 </script>
 
@@ -893,7 +888,11 @@
   <a href="login.html" style="color:var(--accent);font-weight:600;">Get started &rarr;</a>
 </div>
 
-<div class="site-header-spacer" aria-hidden="true"></div>
+<div class="nav-spacer" aria-hidden="true"></div>
+
+<div class="announce-banner">
+  <p>&#127381; <strong>New for 2026:</strong> More people qualify for HSA than ever — bronze &amp; catastrophic plans now eligible. <a href="login.html">Check your eligibility &rarr;</a></p>
+</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -1741,7 +1740,7 @@
   /* ── MOBILE NAV ── */
   .nav-hamburger { display:none;background:none;border:none;cursor:pointer;padding:4px;flex-direction:column;gap:5px; }
   .nav-hamburger span { display:block;width:22px;height:2px;background:var(--ink);border-radius:2px; }
-  .mobile-menu { display:none;position:fixed;top:var(--site-header-h);left:0;right:0;background:var(--paper);border-bottom:1px solid rgba(14,14,13,0.08);padding:16px 24px;flex-direction:column;gap:4px;z-index:99;box-shadow:0 4px 20px rgba(14,14,13,0.08); }
+  .mobile-menu { display:none;position:fixed;top:var(--nav-h);left:0;right:0;background:var(--paper);border-bottom:1px solid rgba(14,14,13,0.08);padding:16px 24px;flex-direction:column;gap:4px;z-index:99;box-shadow:0 4px 20px rgba(14,14,13,0.08); }
   .mobile-menu.open { display:flex; }
   .mobile-menu a { padding:12px 0;font-size:16px;color:var(--ink2);text-decoration:none;border-bottom:1px solid rgba(14,14,13,0.05); }
   @media (max-width:640px) { .nav-hamburger { display:flex; } }
