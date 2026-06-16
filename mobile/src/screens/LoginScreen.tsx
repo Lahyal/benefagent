@@ -42,7 +42,7 @@ export function LoginScreen({ navigation }: Props) {
       if (otpError) throw otpError;
       setOtpEmail(trimmed);
       setOtpSent(true);
-      setSuccess(`We sent a 6-digit code to ${trimmed}. Check your inbox.`);
+      setSuccess(`We sent an 8-digit code to ${trimmed}. Check your inbox.`);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
     } finally {
@@ -58,8 +58,8 @@ export function LoginScreen({ navigation }: Props) {
       setError('Enter your email first');
       return;
     }
-    if (!/^\d{6}$/.test(token)) {
-      setError('Enter the 6-digit code from your email');
+    if (!/^\d{8}$/.test(token)) {
+      setError('Enter the 8-digit code from your email');
       return;
     }
 
@@ -90,7 +90,7 @@ export function LoginScreen({ navigation }: Props) {
         <BrandLogo />
         <Text style={styles.title}>Sign in</Text>
         <Text style={styles.subtitle}>
-          We'll email you a 6-digit code. New here? Same flow — your account is created automatically.
+          We'll email you an 8-digit code. New here? Same flow — your account is created automatically.
         </Text>
 
         {error ? <Text style={styles.errorBox}>{error}</Text> : null}
@@ -113,9 +113,9 @@ export function LoginScreen({ navigation }: Props) {
               label="Verification code"
               value={otp}
               onChangeText={setOtp}
-              placeholder="000000"
+              placeholder="00000000"
               keyboardType="number-pad"
-              maxLength={6}
+              maxLength={8}
               textContentType="oneTimeCode"
               autoComplete="one-time-code"
               editable={!loading}

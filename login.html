@@ -165,7 +165,7 @@ body {
     </a>
 
     <div class="auth-card-title">Sign in</div>
-    <div class="auth-card-sub">We'll email you a 6-digit code. New here? Same flow — your account is created automatically.</div>
+    <div class="auth-card-sub">We'll email you an 8-digit code. New here? Same flow — your account is created automatically.</div>
 
     <div class="error-box" id="login-error"></div>
     <div class="success-box" id="login-success"></div>
@@ -178,7 +178,7 @@ body {
       <div class="field">
         <label>Verification code</label>
         <input type="text" id="login-otp" class="otp-input" inputmode="numeric" pattern="[0-9]*"
-          maxlength="6" placeholder="000000" autocomplete="one-time-code"
+          maxlength="8" placeholder="00000000" autocomplete="one-time-code"
           onkeydown="if(event.key==='Enter'){ event.preventDefault(); verifyLoginOtp(); }">
       </div>
       <button class="submit-btn" id="login-verify-btn" onclick="verifyLoginOtp()">Verify &amp; sign in</button>
@@ -254,7 +254,7 @@ async function sendLoginOtp(isResend) {
   loginOtpSent = true;
   document.getElementById('login-otp-section').style.display = 'block';
   document.getElementById('login-send-btn').style.display = 'none';
-  showSuccess('We sent a 6-digit code to ' + email + '. Check your inbox.');
+  showSuccess('We sent an 8-digit code to ' + email + '. Check your inbox.');
   document.getElementById('login-otp').focus();
 }
 
@@ -263,7 +263,7 @@ async function verifyLoginOtp() {
   const email = loginOtpEmail || document.getElementById('login-email').value.trim();
   const token = document.getElementById('login-otp').value.trim().replace(/\s/g, '');
   if (!email) { showError('Enter your email first'); return; }
-  if (!/^\d{6}$/.test(token)) { showError('Enter the 6-digit code from your email'); return; }
+  if (!/^\d{8}$/.test(token)) { showError('Enter the 8-digit code from your email'); return; }
 
   const btn = document.getElementById('login-verify-btn');
   btn.disabled = true;

@@ -1397,7 +1397,7 @@
     <!-- LOGIN VIEW -->
     <div id="auth-login-view">
       <div class="auth-title">Sign in</div>
-      <div class="auth-sub">We'll email you a 6-digit code. New here? Same flow — your account is created automatically.</div>
+      <div class="auth-sub">We'll email you an 8-digit code. New here? Same flow — your account is created automatically.</div>
       <div class="auth-error" id="login-error"></div>
       <div class="auth-success" id="login-success"></div>
       <div class="auth-field">
@@ -1409,7 +1409,7 @@
         <div class="auth-field">
           <label>Verification code</label>
           <input class="auth-input auth-otp-input" type="text" id="auth-otp" inputmode="numeric" pattern="[0-9]*"
-            maxlength="6" placeholder="000000" autocomplete="one-time-code"
+            maxlength="8" placeholder="00000000" autocomplete="one-time-code"
             onkeydown="if(event.key==='Enter'){ event.preventDefault(); verifyAuthOtp(); }">
         </div>
         <button class="auth-btn" id="auth-verify-btn" onclick="verifyAuthOtp()">Verify &amp; sign in</button>
@@ -1809,7 +1809,7 @@ async function sendAuthOtp(isResend) {
   document.getElementById('auth-otp-section').style.display = 'block';
   document.getElementById('auth-send-btn').style.display = 'none';
   document.getElementById('login-success').style.display = 'block';
-  document.getElementById('login-success').textContent = 'We sent a 6-digit code to ' + email + '. Check your inbox.';
+  document.getElementById('login-success').textContent = 'We sent an 8-digit code to ' + email + '. Check your inbox.';
   document.getElementById('auth-otp').focus();
 }
 
@@ -1819,7 +1819,7 @@ async function verifyAuthOtp() {
   document.getElementById('login-error').style.display = 'none';
 
   if (!email) { showAuthError('login', 'Enter your email first'); return; }
-  if (!/^\d{6}$/.test(token)) { showAuthError('login', 'Enter the 6-digit code from your email'); return; }
+  if (!/^\d{8}$/.test(token)) { showAuthError('login', 'Enter the 8-digit code from your email'); return; }
 
   const btn = document.getElementById('auth-verify-btn');
   btn.disabled = true;
