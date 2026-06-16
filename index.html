@@ -820,6 +820,10 @@
     background: var(--white); color: var(--ink); outline: none; transition: border .2s;
   }
   .auth-input:focus { border-color: var(--accent); }
+  .auth-otp-input {
+    font-size: 22px; letter-spacing: 0.35em; text-align: center; font-weight: 500; padding: 14px;
+  }
+  #auth-otp-section { display: none; }
   .auth-btn {
     width: 100%; padding: 13px; background: var(--ink); color: var(--paper);
     border: none; border-radius: 10px; font-family: var(--font-body);
@@ -1392,57 +1396,27 @@
 
     <!-- LOGIN VIEW -->
     <div id="auth-login-view">
-      <div class="auth-title">Welcome back</div>
-      <div class="auth-sub">Sign in to see your saved benefits analysis</div>
+      <div class="auth-title">Sign in</div>
+      <div class="auth-sub">We'll email you a 6-digit code. New here? Same flow — your account is created automatically.</div>
       <div class="auth-error" id="login-error"></div>
       <div class="auth-success" id="login-success"></div>
       <div class="auth-field">
         <label>Email</label>
-        <input class="auth-input" type="email" id="login-email" placeholder="you@example.com">
+        <input class="auth-input" type="email" id="login-email" placeholder="you@example.com" autocomplete="email"
+          onkeydown="if(event.key==='Enter'){ event.preventDefault(); authOtpSent ? verifyAuthOtp() : sendAuthOtp(); }">
       </div>
-      <div class="auth-field">
-        <label>Password</label>
-        <input class="auth-input" type="password" id="login-password" placeholder="••••••••">
+      <div id="auth-otp-section">
+        <div class="auth-field">
+          <label>Verification code</label>
+          <input class="auth-input auth-otp-input" type="text" id="auth-otp" inputmode="numeric" pattern="[0-9]*"
+            maxlength="6" placeholder="000000" autocomplete="one-time-code"
+            onkeydown="if(event.key==='Enter'){ event.preventDefault(); verifyAuthOtp(); }">
+        </div>
+        <button class="auth-btn" id="auth-verify-btn" onclick="verifyAuthOtp()">Verify &amp; sign in</button>
+        <button class="auth-btn" id="auth-resend-btn" type="button" onclick="sendAuthOtp(true)"
+          style="background:transparent;color:var(--ink2);border:1.5px solid rgba(14,14,13,0.15);margin-top:8px;">Resend code</button>
       </div>
-      <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign in</button>
-      <div class="auth-switch">No account? <a onclick="showAuthView('signup')">Create account</a></div>
-      <div class="auth-switch" style="margin-top:8px;"><a onclick="showAuthView('reset')">Forgot password?</a></div>
-    </div>
-
-    <!-- SIGNUP VIEW -->
-    <div id="auth-signup-view" style="display:none;">
-      <div class="auth-title">Create your account</div>
-      <div class="auth-sub">Find every dollar you're missing in your benefits</div>
-      <div class="auth-error" id="signup-error"></div>
-      <div class="auth-success" id="signup-success"></div>
-      <div class="auth-field">
-        <label>Full name</label>
-        <input class="auth-input" type="text" id="signup-name" placeholder="Your full name">
-      </div>
-      <div class="auth-field">
-        <label>Email</label>
-        <input class="auth-input" type="email" id="signup-email" placeholder="you@example.com">
-      </div>
-      <div class="auth-field">
-        <label>Password</label>
-        <input class="auth-input" type="password" id="signup-password" placeholder="At least 8 characters">
-      </div>
-      <button class="auth-btn" id="signup-btn" onclick="doSignup()">Create account</button>
-      <div class="auth-switch">Already have an account? <a href="login.html">Sign in</a></div>
-    </div>
-
-    <!-- RESET VIEW -->
-    <div id="auth-reset-view" style="display:none;">
-      <div class="auth-title">Reset your password</div>
-      <div class="auth-sub">We'll send you a reset link by email</div>
-      <div class="auth-error" id="reset-error"></div>
-      <div class="auth-success" id="reset-success"></div>
-      <div class="auth-field">
-        <label>Email</label>
-        <input class="auth-input" type="email" id="reset-email" placeholder="you@example.com">
-      </div>
-      <button class="auth-btn" id="reset-btn" onclick="doReset()">Send reset link</button>
-      <div class="auth-switch"><a onclick="showAuthView('login')">Back to sign in</a></div>
+      <button class="auth-btn" id="auth-send-btn" onclick="sendAuthOtp()">Send sign-in code</button>
     </div>
   </div>
 </div>
@@ -1783,8 +1757,21 @@ function clearUser() {
 }
 
 // ---- AUTH MODAL ----
-function openAuthModal(view = 'login') {
-  showAuthView(view);
+let authOtpSent = false;
+let authOtpEmail = '';
+
+function resetAuthOtpUi() {
+  authOtpSent = false;
+  authOtpEmail = '';
+  document.getElementById('auth-otp-section').style.display = 'none';
+  document.getElementById('auth-send-btn').style.display = 'block';
+  document.getElementById('auth-otp').value = '';
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-success').style.display = 'none';
+}
+
+function openAuthModal() {
+  resetAuthOtpUi();
   document.getElementById('auth-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1792,86 +1779,67 @@ function openAuthModal(view = 'login') {
 function closeAuth() {
   document.getElementById('auth-modal').classList.remove('open');
   document.body.style.overflow = '';
+  resetAuthOtpUi();
 }
 
-function showAuthView(view) {
-  ['login', 'signup', 'reset'].forEach(v => {
-    document.getElementById('auth-' + v + '-view').style.display = v === view ? 'block' : 'none';
-  });
-}
-
-async function doLogin() {
+async function sendAuthOtp(isResend) {
   const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  const btn = document.getElementById('login-btn');
-  const errEl = document.getElementById('login-error');
-  errEl.style.display = 'none';
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-success').style.display = 'none';
 
-  if (!email || !password) { showAuthError('login', 'Please fill in all fields'); return; }
+  if (!email) { showAuthError('login', 'Enter your email'); return; }
 
+  const btn = document.getElementById(isResend ? 'auth-resend-btn' : 'auth-send-btn');
+  const prevText = btn.textContent;
   btn.disabled = true;
-  btn.textContent = 'Signing in...';
+  btn.textContent = isResend ? 'Resending...' : 'Sending...';
 
-  const { error } = await sbClient.auth.signInWithPassword({ email, password });
-
-  btn.disabled = false;
-  btn.textContent = 'Sign in';
-
-  if (error) { showAuthError('login', error.message); return; }
-  closeAuth();
-  openApp();
-}
-
-async function doSignup() {
-  const name = document.getElementById('signup-name').value.trim();
-  const email = document.getElementById('signup-email').value.trim();
-  const password = document.getElementById('signup-password').value;
-  const btn = document.getElementById('signup-btn');
-
-  if (!email || !password) { showAuthError('signup', 'Please fill in all fields'); return; }
-  if (password.length < 8) { showAuthError('signup', 'Password must be at least 8 characters'); return; }
-
-  btn.disabled = true;
-  btn.textContent = 'Creating account...';
-
-  const { data, error } = await sbClient.auth.signUp({
-    email, password,
-    options: { data: { full_name: name } }
+  const { error } = await sbClient.auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: true },
   });
 
   btn.disabled = false;
-  btn.textContent = 'Create account';
+  btn.textContent = prevText;
+  if (error) { showAuthError('login', error.message); return; }
 
-  if (error) { showAuthError('signup', error.message); return; }
+  authOtpEmail = email;
+  authOtpSent = true;
+  document.getElementById('auth-otp-section').style.display = 'block';
+  document.getElementById('auth-send-btn').style.display = 'none';
+  document.getElementById('login-success').style.display = 'block';
+  document.getElementById('login-success').textContent = 'We sent a 6-digit code to ' + email + '. Check your inbox.';
+  document.getElementById('auth-otp').focus();
+}
 
-  if (typeof window.baRedditConversion === 'function') {
-    var suId = (data.user && data.user.id) ? data.user.id : ('signup_' + email.replace(/[^a-z0-9@._-]/gi, ''));
-    window.baRedditConversion('SignUp', { conversionId: suId });
+async function verifyAuthOtp() {
+  const email = authOtpEmail || document.getElementById('login-email').value.trim();
+  const token = document.getElementById('auth-otp').value.trim().replace(/\s/g, '');
+  document.getElementById('login-error').style.display = 'none';
+
+  if (!email) { showAuthError('login', 'Enter your email first'); return; }
+  if (!/^\d{6}$/.test(token)) { showAuthError('login', 'Enter the 6-digit code from your email'); return; }
+
+  const btn = document.getElementById('auth-verify-btn');
+  btn.disabled = true;
+  btn.textContent = 'Verifying...';
+
+  const { data, error } = await sbClient.auth.verifyOtp({ email, token, type: 'email' });
+
+  btn.disabled = false;
+  btn.textContent = 'Verify & sign in';
+  if (error) { showAuthError('login', error.message); return; }
+
+  if (data.user && typeof window.baRedditConversion === 'function') {
+    const created = new Date(data.user.created_at).getTime();
+    if (Date.now() - created < 60000) {
+      const suId = data.user.id || ('signup_' + email.replace(/[^a-z0-9@._-]/gi, ''));
+      window.baRedditConversion('SignUp', { conversionId: suId });
+    }
   }
 
-  document.getElementById('signup-success').style.display = 'block';
-  document.getElementById('signup-success').textContent = 'Account created! Check your email to confirm, then sign in.';
-  setTimeout(() => showAuthView('login'), 3000);
-}
-
-async function doReset() {
-  const email = document.getElementById('reset-email').value.trim();
-  const btn = document.getElementById('reset-btn');
-  if (!email) { showAuthError('reset', 'Please enter your email'); return; }
-
-  btn.disabled = true;
-  btn.textContent = 'Sending...';
-
-  const { error } = await sbClient.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://benefagent.com'
-  });
-
-  btn.disabled = false;
-  btn.textContent = 'Send reset link';
-
-  if (error) { showAuthError('reset', error.message); return; }
-  document.getElementById('reset-success').style.display = 'block';
-  document.getElementById('reset-success').textContent = 'Reset link sent! Check your email.';
+  closeAuth();
+  openApp();
 }
 
 async function doSignOut() {

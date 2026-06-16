@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button } from '../components/Button';
 import { BrandLogo } from '../components/BrandLogo';
@@ -16,55 +10,68 @@ import { colors, radii, spacing, typography } from '../theme';
 import type { RootStackParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
-type Tab = 'login' | 'signup';
 
 export function LoginScreen({ navigation }: Props) {
-  const [tab, setTab] = useState<Tab>('login');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpEmail, setOtpEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const onGoogle = () => {
-    Alert.alert(
-      'Google sign-in',
-      'Native Google OAuth will be wired in a follow-up (URL scheme + Supabase redirect). Use email for now.',
-    );
-  };
-
-  const onSubmit = async () => {
+  const clearMessages = () => {
     setError('');
     setSuccess('');
-    if (!email.trim() || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
-    if (tab === 'signup' && password.length < 8) {
-      setError('Password must be at least 8 characters');
+  };
+
+  const sendOtp = async (isResend = false) => {
+    clearMessages();
+    const trimmed = email.trim();
+    if (!trimmed) {
+      setError('Enter your email');
       return;
     }
 
     setLoading(true);
     try {
-      if (tab === 'login') {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
-        if (signInError) throw signInError;
-        navigation.replace('Main');
-      } else {
-        const { error: signUpError } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-          options: { data: { full_name: name.trim() } },
-        });
-        if (signUpError) throw signUpError;
-        setSuccess('Account created! Check your email to confirm, then sign in.');
-        setTab('login');
-      }
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: trimmed,
+        options: { shouldCreateUser: true },
+      });
+      if (otpError) throw otpError;
+      setOtpEmail(trimmed);
+      setOtpSent(true);
+      setSuccess(`We sent a 6-digit code to ${trimmed}. Check your inbox.`);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyOtp = async () => {
+    clearMessages();
+    const addr = otpEmail || email.trim();
+    const token = otp.replace(/\s/g, '');
+    if (!addr) {
+      setError('Enter your email first');
+      return;
+    }
+    if (!/^\d{6}$/.test(token)) {
+      setError('Enter the 6-digit code from your email');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: addr,
+        token,
+        type: 'email',
+      });
+      if (verifyError) throw verifyError;
+      navigation.replace('Main');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
     } finally {
@@ -81,39 +88,14 @@ export function LoginScreen({ navigation }: Props) {
 
       <View style={styles.card}>
         <BrandLogo />
-        <Text style={styles.tagline}>
-          Your AI benefits agent — finds every dollar you are missing
+        <Text style={styles.title}>Sign in</Text>
+        <Text style={styles.subtitle}>
+          We'll email you a 6-digit code. New here? Same flow — your account is created automatically.
         </Text>
-
-        <View style={styles.tabs}>
-          <Pressable
-            onPress={() => { setTab('login'); setError(''); setSuccess(''); }}
-            style={[styles.tab, tab === 'login' && styles.tabActive]}>
-            <Text style={[styles.tabText, tab === 'login' && styles.tabTextActive]}>Sign in</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => { setTab('signup'); setError(''); setSuccess(''); }}
-            style={[styles.tab, tab === 'signup' && styles.tabActive]}>
-            <Text style={[styles.tabText, tab === 'signup' && styles.tabTextActive]}>Create account</Text>
-          </Pressable>
-        </View>
-
-        <Pressable style={styles.googleBtn} onPress={onGoogle}>
-          <Text style={styles.googleBtnText}>Continue with Google</Text>
-        </Pressable>
-
-        <View style={styles.dividerRow}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or {tab === 'login' ? 'sign in' : 'sign up'} with email</Text>
-          <View style={styles.dividerLine} />
-        </View>
 
         {error ? <Text style={styles.errorBox}>{error}</Text> : null}
         {success ? <Text style={styles.successBox}>{success}</Text> : null}
 
-        {tab === 'signup' && (
-          <Input label="Full name" value={name} onChangeText={setName} placeholder="Your name" autoCapitalize="words" />
-        )}
         <Input
           label="Email"
           value={email}
@@ -122,20 +104,36 @@ export function LoginScreen({ navigation }: Props) {
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
-        />
-        <Input
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          placeholder={tab === 'signup' ? 'At least 8 characters' : '••••••••'}
-          secureTextEntry
+          editable={!loading}
         />
 
-        <Button
-          label={tab === 'login' ? 'Sign in' : 'Create account'}
-          loading={loading}
-          onPress={onSubmit}
-        />
+        {otpSent ? (
+          <>
+            <Input
+              label="Verification code"
+              value={otp}
+              onChangeText={setOtp}
+              placeholder="000000"
+              keyboardType="number-pad"
+              maxLength={6}
+              textContentType="oneTimeCode"
+              autoComplete="one-time-code"
+              editable={!loading}
+              style={styles.otpInput}
+            />
+            <Button label="Verify & sign in" loading={loading} onPress={verifyOtp} />
+            <Button
+              label="Resend code"
+              variant="ghost"
+              loading={false}
+              disabled={loading}
+              onPress={() => sendOtp(true)}
+              style={styles.resendBtn}
+            />
+          </>
+        ) : (
+          <Button label="Send sign-in code" loading={loading} onPress={() => sendOtp()} />
+        )}
       </View>
     </ScreenBackground>
   );
@@ -169,64 +167,25 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(14,14,13,0.07)',
     padding: spacing.lg,
   },
-  tagline: {
-    ...typography.bodySmall,
+  title: {
+    ...typography.title,
+    fontSize: 22,
     marginTop: spacing.sm,
-    marginBottom: spacing.lg,
+    marginBottom: 4,
   },
-  tabs: {
-    flexDirection: 'row',
-    backgroundColor: colors.paper2,
-    borderRadius: radii.sm,
-    padding: 4,
-    marginBottom: spacing.lg,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  tabActive: {
-    backgroundColor: colors.white,
-  },
-  tabText: {
+  subtitle: {
     ...typography.bodySmall,
-    color: colors.ink3,
+    marginBottom: spacing.lg,
+    lineHeight: 20,
+  },
+  otpInput: {
+    fontSize: 22,
+    letterSpacing: 6,
+    textAlign: 'center',
     fontWeight: '500',
   },
-  tabTextActive: {
-    color: colors.ink,
-  },
-  googleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 13,
-    borderRadius: radii.md,
-    borderWidth: 1.5,
-    borderColor: colors.borderStrong,
-    marginBottom: spacing.md,
-  },
-  googleBtnText: {
-    ...typography.title,
-    fontSize: 14,
-    color: colors.ink2,
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: spacing.md,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.border,
-  },
-  dividerText: {
-    ...typography.caption,
-    color: colors.ink3,
+  resendBtn: {
+    marginTop: spacing.sm,
   },
   errorBox: {
     backgroundColor: colors.errorBg,

@@ -5,7 +5,7 @@ Bare **React Native** app (no Expo) for iOS and Android. Matches [benefagent.com
 ## Screens (v1)
 
 1. **Onboarding** — 3-step setup (accounts, profile details, action plan) mirroring `app.html`
-2. **Login** — Sign in / sign up with Supabase (same project as the website)
+2. **Login** — Email OTP sign-in with Supabase (same project as the website)
 3. **Main** — Dashboard + tool grid: Benefits Analyzer, HSA/FSA Checker, Claim Builder, 401k Calculator, History, Settings
 
 Tool screens show placeholders; next step is wiring each to the existing Supabase edge functions.
@@ -62,7 +62,6 @@ mobile/
 
 ## Next steps
 
-- [ ] Native Google OAuth (URL scheme + Supabase redirect)
 - [ ] Implement each tool screen + API calls
 - [ ] App Store / Play billing (RevenueCat)
 - [ ] Link DM Sans / DM Serif Display font files in `assets/fonts`
