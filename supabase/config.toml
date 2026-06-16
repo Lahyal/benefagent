@@ -22,6 +22,5 @@ site_url = "https://benefagent.com"
 additional_redirect_urls = [
   "https://benefagent.com/app.html",
   "https://benefagent.com/login.html",
-  "https://benefagent.com/pwa.html",
   "http://localhost:3000",
 ]

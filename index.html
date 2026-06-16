@@ -119,6 +119,7 @@
     --radius: 12px;
     --font-display: 'DM Serif Display', serif;
     --font-body: 'DM Sans', sans-serif;
+    --site-header-h: 96px;
   }
 
   html { scroll-behavior: smooth; }
@@ -130,12 +131,41 @@
     overflow-x: hidden;
   }
 
+  /* ── SITE HEADER (announcement + nav) ── */
+  .site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+  }
+  .announce-banner {
+    background: var(--accent);
+    padding: 10px 24px;
+    text-align: center;
+  }
+  .announce-banner p {
+    font-size: 13px;
+    color: white;
+    font-weight: 400;
+    line-height: 1.45;
+  }
+  .announce-banner a {
+    color: white;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+  .site-header-spacer {
+    height: var(--site-header-h);
+    flex-shrink: 0;
+  }
+
   /* ── NAV ── */
   nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    position: relative;
     display: flex; align-items: center; justify-content: space-between;
     padding: 18px 48px;
-    background: rgba(245,242,235,0.85);
+    background: rgba(245,242,235,0.95);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(14,14,13,0.08);
   }
@@ -167,7 +197,7 @@
     min-height: 100vh;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    padding: 120px 24px 80px;
+    padding: 48px 24px 80px;
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -703,7 +733,7 @@
     .nav-hamburger { display: flex !important; }
 
     /* Hero — fix overflow */
-    .hero { padding: 90px 24px 60px; overflow: hidden; }
+    .hero { padding: 40px 24px 60px; overflow: hidden; }
     .hero h1 { font-size: 36px; line-height: 1.1; word-break: break-word; max-width: 100%; overflow-wrap: break-word; padding: 0; }
     .hero-sub { font-size: 16px; }
     .hero-cta-row { flex-direction: column; width: 100%; }
@@ -726,7 +756,7 @@
     /* Testimonials — stack vertically */
     .testimonials-grid { grid-template-columns: 1fr !important; }
     div[style*="repeat(3,1fr)"] { grid-template-columns: 1fr !important; display: flex !important; flex-direction: column !important; }
-    .hero { padding: 60px 16px 48px !important; }
+    .hero { padding: 32px 16px 48px !important; }
     .hero h1 { font-size: 32px !important; }
     .nav { padding: 14px 16px !important; }
     .container { padding-left: 16px !important; padding-right: 16px !important; }
@@ -811,23 +841,43 @@
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <a href="#" class="nav-logo">Benef<span>Agent</span></a>
-  <div class="nav-links">
-    <a href="#how">How it works</a>
-    <a href="#features">Features</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#faq">FAQ</a>
-    <a href="blog.html">Blog</a>
+<script>
+(function () {
+  function syncSiteHeaderHeight() {
+    var el = document.getElementById('site-header');
+    if (!el) return;
+    document.documentElement.style.setProperty('--site-header-h', el.offsetHeight + 'px');
+  }
+  syncSiteHeaderHeight();
+  window.addEventListener('resize', syncSiteHeaderHeight);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(syncSiteHeaderHeight);
+  }
+})();
+</script>
+
+<!-- SITE HEADER -->
+<header class="site-header" id="site-header">
+  <div class="announce-banner">
+    <p>&#127381; <strong>New for 2026:</strong> More people qualify for HSA than ever — bronze &amp; catastrophic plans now eligible. <a href="login.html">Check your eligibility &rarr;</a></p>
   </div>
-  <div id="nav-auth-area">
-    <a href="app.html" class="nav-cta" onclick="checkAuthAndOpen(event)">Open App</a>
-  </div>
-  <button class="nav-hamburger" onclick="toggleMobileMenu()" id="hamburger">
-    <span></span><span></span><span></span>
-  </button>
-</nav>
+  <nav>
+    <a href="#" class="nav-logo">Benef<span>Agent</span></a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="blog.html">Blog</a>
+    </div>
+    <div id="nav-auth-area">
+      <a href="app.html" class="nav-cta" onclick="checkAuthAndOpen(event)">Open App</a>
+    </div>
+    <button class="nav-hamburger" onclick="toggleMobileMenu()" id="hamburger">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+</header>
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobile-menu">
@@ -840,10 +890,7 @@
   <a href="login.html" style="color:var(--accent);font-weight:600;">Get started &rarr;</a>
 </div>
 
-<!-- 2026 BANNER -->
-<div style="background:var(--accent);padding:10px 24px;text-align:center;position:relative;z-index:99;">
-  <p style="font-size:13px;color:white;font-weight:400;">&#127381; <strong>New for 2026:</strong> More people qualify for HSA than ever — bronze &amp; catastrophic plans now eligible. <a href="login.html" style="color:white;font-weight:600;text-decoration:underline;">Check your eligibility &rarr;</a></p>
-</div>
+<div class="site-header-spacer" aria-hidden="true"></div>
 
 <!-- HERO -->
 <section class="hero">
@@ -1182,16 +1229,35 @@
             <div style="font-size:14px;color:rgba(245,242,235,.7);">Instant HSA/FSA checks anywhere</div>
           </div>
           <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:32px;height:32px;background:rgba(26,122,94,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🏠</div>
-            <div style="font-size:14px;color:rgba(245,242,235,.7);">Installs on home screen — no App Store needed</div>
+            <div style="width:32px;height:32px;background:rgba(26,122,94,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">📱</div>
+            <div style="font-size:14px;color:rgba(245,242,235,.7);">Native iOS &amp; Android apps — coming soon</div>
           </div>
         </div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <a href="login.html" style="display:inline-flex;align-items:center;gap:8px;padding:13px 24px;background:var(--accent);color:white;border-radius:10px;text-decoration:none;font-family:var(--font-body);font-size:15px;font-weight:500;">Get started →</a>
-          
-          <div style="display:inline-flex;flex-direction:column;justify-content:center;">
-            <div style="font-size:12px;color:rgba(245,242,235,.35);">Then tap Share →</div>
-            <div style="font-size:12px;color:rgba(245,242,235,.35);">"Add to Home Screen"</div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+            <a href="#" id="app-store-link" aria-label="Download on the App Store (coming soon)" title="App Store link coming soon" style="display:inline-block;opacity:.92;transition:opacity .2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.92'">
+              <svg xmlns="http://www.w3.org/2000/svg" width="135" height="40" viewBox="0 0 135 40" role="img" aria-hidden="true">
+                <rect width="135" height="40" rx="7" fill="#000"/>
+                <text x="44" y="14" fill="#fff" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="8">Download on the</text>
+                <text x="44" y="28" fill="#fff" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="14" font-weight="600">App Store</text>
+                <path fill="#fff" d="M24.8 20.3c0-2.5 1.3-4.7 3.5-5.9-.9-1.3-2.3-2.1-3.9-2.1-1.7 0-3.2.9-4 2.3-1.7 0-3.3 1.4-3.3 3.2 0 .8.3 1.5.8 2.1 1.6 1.9 3.2 3.8 3.2 6.4 0 .3 0 .6-.1.9 1.2-.4 2.1-1.4 2.5-2.7.6-.2 1.1-.6 1.5-1.1zM28.3 14.4c1.1 0 2.1.4 2.9 1.1-2.5 1.5-2.1 5.3.7 6.3-.5 1.5-1.3 2.9-2.3 4.1-1.1 1.3-2.2 2.6-3.8 2.6-1.5 0-2-.8-3.8-.8-1.9 0-2.4.8-3.9.8-1.6 0-2.8-1.4-3.9-2.7-2-2.4-3.5-6.8-1.5-9.8 1-1.5 2.8-2.4 4.7-2.4 1.8 0 2.9 1 3.9 1 1-.1 2.2-1 3.7-1z"/>
+              </svg>
+            </a>
+            <a href="#" id="play-store-link" aria-label="Get it on Google Play (coming soon)" title="Google Play link coming soon" style="display:inline-block;opacity:.92;transition:opacity .2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.92'">
+              <svg xmlns="http://www.w3.org/2000/svg" width="135" height="40" viewBox="0 0 135 40" role="img" aria-hidden="true">
+                <rect width="135" height="40" rx="7" fill="#000"/>
+                <text x="44" y="13" fill="#fff" font-family="Roboto,sans-serif" font-size="7" opacity=".85">GET IT ON</text>
+                <text x="44" y="28" fill="#fff" font-family="Roboto,sans-serif" font-size="14" font-weight="500">Google Play</text>
+                <path fill="#34A853" d="M11 8.5 22.5 20 11 31.5z"/>
+                <path fill="#FBBC04" d="M11 8.5 22.5 20 28 14.5z"/>
+                <path fill="#4285F4" d="M11 31.5 22.5 20 28 25.5z"/>
+                <path fill="#EA4335" d="M28 14.5 22.5 20 28 25.5z"/>
+              </svg>
+            </a>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+            <a href="login.html" style="display:inline-flex;align-items:center;gap:8px;padding:13px 24px;background:var(--accent);color:white;border-radius:10px;text-decoration:none;font-family:var(--font-body);font-size:15px;font-weight:500;">Get started on web →</a>
+            <span style="font-size:12px;color:rgba(245,242,235,.35);">Store links will be added when apps launch</span>
           </div>
         </div>
       </div>
@@ -1672,7 +1738,7 @@
   /* ── MOBILE NAV ── */
   .nav-hamburger { display:none;background:none;border:none;cursor:pointer;padding:4px;flex-direction:column;gap:5px; }
   .nav-hamburger span { display:block;width:22px;height:2px;background:var(--ink);border-radius:2px; }
-  .mobile-menu { display:none;position:fixed;top:65px;left:0;right:0;background:var(--paper);border-bottom:1px solid rgba(14,14,13,0.08);padding:16px 24px;flex-direction:column;gap:4px;z-index:99;box-shadow:0 4px 20px rgba(14,14,13,0.08); }
+  .mobile-menu { display:none;position:fixed;top:var(--site-header-h);left:0;right:0;background:var(--paper);border-bottom:1px solid rgba(14,14,13,0.08);padding:16px 24px;flex-direction:column;gap:4px;z-index:99;box-shadow:0 4px 20px rgba(14,14,13,0.08); }
   .mobile-menu.open { display:flex; }
   .mobile-menu a { padding:12px 0;font-size:16px;color:var(--ink2);text-decoration:none;border-bottom:1px solid rgba(14,14,13,0.05); }
   @media (max-width:640px) { .nav-hamburger { display:flex; } }
@@ -2452,57 +2518,5 @@ function pricingClick(plan) {
 }
 </script>
 
-
-<script>
-let deferredPrompt = null;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  // Show install button, hide open button
-  const installBtn = document.getElementById('pwa-install-btn');
-  const openBtn = document.getElementById('pwa-open-btn');
-  if (installBtn) installBtn.style.display = 'inline-flex';
-  if (openBtn) openBtn.style.display = 'none';
-});
-
-window.addEventListener('appinstalled', () => {
-  // App installed - show open button instead
-  const installBtn = document.getElementById('pwa-install-btn');
-  const openBtn = document.getElementById('pwa-open-btn');
-  if (installBtn) installBtn.style.display = 'none';
-  if (openBtn) { openBtn.style.display = 'inline-flex'; }
-  deferredPrompt = null;
-});
-
-async function installPWA() {
-  if (deferredPrompt) {
-    // Chrome/Android - native install prompt
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    deferredPrompt = null;
-  } else {
-    // iOS Safari or already installed - redirect to pwa.html with instructions
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
-    
-    if (isInstalled) {
-      window.location.href = 'pwa.html';
-    } else if (isIOS) {
-      // Show iOS install instructions
-      const msg = document.createElement('div');
-      msg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0e0e0d;color:white;padding:16px 20px;border-radius:14px;font-size:14px;text-align:center;z-index:9999;max-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.3);';
-      msg.innerHTML = '<div style="font-weight:600;margin-bottom:6px;">Install BenefAgent</div><div style="font-size:13px;opacity:.7;line-height:1.5;">Tap the <strong>Share</strong> button below, then <strong>"Add to Home Screen"</strong></div><div style="font-size:24px;margin-top:8px;">⬆️</div>';
-      document.body.appendChild(msg);
-      setTimeout(() => msg.remove(), 5000);
-    } else {
-      // Desktop or other - open PWA page
-      window.location.href = 'pwa.html';
-    }
-  }
-}
-
-// On page load - check if already installed
-if (window.matchMedia('(display-mode: standalone)').matches) {
-  const installBtn = document.getElementById('pwa-install-btn');
-  const openBtn = document.getElementById('pwa
+</body>
+</html>

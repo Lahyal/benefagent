@@ -1,0 +1,21 @@
+/** Matches benefagent.com CSS variables (--ink, --paper, --accent, etc.) */
+export const colors = {
+  ink: '#0e0e0d',
+  ink2: '#3a3a36',
+  ink3: '#888880',
+  paper: '#f5f2eb',
+  paper2: '#ede9df',
+  white: '#ffffff',
+  accent: '#1a7a5e',
+  accentDark: '#0f5a45',
+  accent2: '#d4541a',
+  gold: '#c9a84c',
+  border: 'rgba(14,14,13,0.08)',
+  borderStrong: 'rgba(14,14,13,0.12)',
+  accentSoft: 'rgba(26,122,94,0.12)',
+  accentSoftBg: 'rgba(26,122,94,0.08)',
+  error: '#712B13',
+  errorBg: 'rgba(212,84,26,0.1)',
+  success: '#085041',
+  successBg: 'rgba(26,122,94,0.12)',
+} as const;

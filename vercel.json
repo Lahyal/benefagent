@@ -1,0 +1,7 @@
+{
+  "redirects": [
+    { "source": "/pwa.html", "destination": "/app.html", "permanent": true },
+    { "source": "/manifest.json", "destination": "/", "permanent": true },
+    { "source": "/sw.js", "destination": "/", "permanent": true }
+  ]
+}
