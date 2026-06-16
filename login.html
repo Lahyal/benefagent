@@ -104,6 +104,19 @@ body {
   background: var(--white); color: var(--ink); outline: none; transition: border .2s;
 }
 .field input:focus { border-color: var(--accent); }
+.otp-input {
+  font-size: 22px; letter-spacing: 0.35em; text-align: center;
+  font-weight: 500; padding: 14px;
+}
+.ghost-btn {
+  width: 100%; padding: 11px; background: transparent; color: var(--ink2);
+  border: 1.5px solid rgba(14,14,13,0.15); border-radius: 10px;
+  font-family: var(--font-body); font-size: 14px; font-weight: 500;
+  cursor: pointer; margin-top: 8px; transition: border-color .2s, color .2s;
+}
+.ghost-btn:hover { border-color: var(--accent); color: var(--accent); }
+.ghost-btn:disabled { opacity: .5; cursor: not-allowed; }
+#login-otp-section, #signup-otp-section, #login-password-section { display: none; }
 .submit-btn {
   width: 100%; padding: 13px; background: var(--ink); color: var(--paper);
   border: none; border-radius: 10px; font-family: var(--font-body);
@@ -194,15 +207,33 @@ body {
         <div class="success-box" id="login-success"></div>
         <div class="field">
           <label>Email</label>
-          <input type="email" id="login-email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')doLogin()">
+          <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email"
+            onkeydown="if(event.key==='Enter'){ event.preventDefault(); loginOtpSent ? verifyLoginOtp() : sendLoginOtp(); }">
         </div>
-        <div class="field">
-          <label>Password</label>
-          <input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+        <div id="login-otp-section">
+          <div class="field">
+            <label>Verification code</label>
+            <input type="text" id="login-otp" class="otp-input" inputmode="numeric" pattern="[0-9]*"
+              maxlength="6" placeholder="000000" autocomplete="one-time-code"
+              onkeydown="if(event.key==='Enter'){ event.preventDefault(); verifyLoginOtp(); }">
+          </div>
+          <button class="submit-btn" id="login-verify-btn" onclick="verifyLoginOtp()">Verify &amp; sign in</button>
+          <button class="ghost-btn" id="login-resend-btn" type="button" onclick="sendLoginOtp(true)">Resend code</button>
         </div>
-        <button class="submit-btn" id="login-btn" onclick="doLogin()">Sign in</button>
+        <button class="submit-btn" id="login-send-btn" onclick="sendLoginOtp()">Send sign-in code</button>
         <div class="auth-footer" style="margin-top:16px;">
-          <a onclick="showReset()">Forgot your password?</a>
+          <a onclick="toggleLoginPassword()">Use password instead</a>
+        </div>
+        <div id="login-password-section">
+          <div class="field" style="margin-top:16px;">
+            <label>Password</label>
+            <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"
+              onkeydown="if(event.key==='Enter'){ event.preventDefault(); doLogin(); }">
+          </div>
+          <button class="submit-btn" id="login-btn" onclick="doLogin()">Sign in with password</button>
+          <div class="auth-footer" style="margin-top:12px;">
+            <a onclick="showReset()">Forgot your password?</a>
+          </div>
         </div>
       </div>
 
@@ -217,17 +248,34 @@ body {
         <div class="success-box" id="signup-success"></div>
         <div class="field">
           <label>Full name</label>
-          <input type="text" id="signup-name" placeholder="Your name">
+          <input type="text" id="signup-name" placeholder="Your name" autocomplete="name">
         </div>
         <div class="field">
           <label>Email</label>
-          <input type="email" id="signup-email" placeholder="you@example.com">
+          <input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email"
+            onkeydown="if(event.key==='Enter'){ event.preventDefault(); signupOtpSent ? verifySignupOtp() : sendSignupOtp(); }">
         </div>
-        <div class="field">
-          <label>Password</label>
-          <input type="password" id="signup-password" placeholder="At least 8 characters">
+        <div id="signup-otp-section">
+          <div class="field">
+            <label>Verification code</label>
+            <input type="text" id="signup-otp" class="otp-input" inputmode="numeric" pattern="[0-9]*"
+              maxlength="6" placeholder="000000" autocomplete="one-time-code"
+              onkeydown="if(event.key==='Enter'){ event.preventDefault(); verifySignupOtp(); }">
+          </div>
+          <button class="submit-btn" id="signup-verify-btn" onclick="verifySignupOtp()">Verify &amp; create account</button>
+          <button class="ghost-btn" id="signup-resend-btn" type="button" onclick="sendSignupOtp(true)">Resend code</button>
         </div>
-        <button class="submit-btn" id="signup-btn" onclick="doSignup()">Create account</button>
+        <button class="submit-btn" id="signup-send-btn" onclick="sendSignupOtp()">Send verification code</button>
+        <div class="auth-footer" style="margin-top:16px;">
+          <a onclick="toggleSignupPassword()">Use password instead</a>
+        </div>
+        <div id="signup-password-section">
+          <div class="field" style="margin-top:16px;">
+            <label>Password</label>
+            <input type="password" id="signup-password" placeholder="At least 8 characters" autocomplete="new-password">
+          </div>
+          <button class="submit-btn" id="signup-btn" onclick="doSignup()">Create account with password</button>
+        </div>
       </div>
     </div>
 
@@ -253,6 +301,42 @@ const SUPABASE_URL = window.BENEFAGENT_SUPABASE.url;
 const SUPABASE_ANON_KEY = window.BENEFAGENT_SUPABASE.anonKey;
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+let loginOtpSent = false;
+let signupOtpSent = false;
+let loginOtpEmail = '';
+let signupOtpEmail = '';
+
+function appRedirectUrl() {
+  const plan = new URLSearchParams(window.location.search).get('plan');
+  return plan ? 'app.html?upgrade=' + plan : 'app.html';
+}
+
+function resetLoginOtpUi() {
+  loginOtpSent = false;
+  loginOtpEmail = '';
+  document.getElementById('login-otp-section').style.display = 'none';
+  document.getElementById('login-send-btn').style.display = 'block';
+  document.getElementById('login-otp').value = '';
+}
+
+function resetSignupOtpUi() {
+  signupOtpSent = false;
+  signupOtpEmail = '';
+  document.getElementById('signup-otp-section').style.display = 'none';
+  document.getElementById('signup-send-btn').style.display = 'block';
+  document.getElementById('signup-otp').value = '';
+}
+
+function toggleLoginPassword() {
+  const el = document.getElementById('login-password-section');
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+function toggleSignupPassword() {
+  const el = document.getElementById('signup-password-section');
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
 // If already logged in, go to app
 async function checkSession() {
   const { data: { session } } = await sb.auth.getSession();
@@ -265,6 +349,10 @@ function switchTab(tab) {
   document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
   document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
   document.getElementById('signup-form').style.display = tab === 'signup' ? 'block' : 'none';
+  clearMessages('login');
+  clearMessages('signup');
+  resetLoginOtpUi();
+  resetSignupOtpUi();
 }
 
 function showReset() {
@@ -293,9 +381,112 @@ function clearMessages(id) {
 async function signInWithGoogle() {
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: 'https://benefagent.com/app.html' }
+    options: { redirectTo: 'https://benefagent.com/' + appRedirectUrl().replace(/^\//, '') }
   });
   if (error) alert('Google sign in failed: ' + error.message);
+}
+
+async function sendLoginOtp(isResend) {
+  clearMessages('login');
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { showError('login', 'Enter your email'); return; }
+
+  const btn = document.getElementById(isResend ? 'login-resend-btn' : 'login-send-btn');
+  const prevText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = isResend ? 'Resending...' : 'Sending...';
+
+  const { error } = await sb.auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: true },
+  });
+
+  btn.disabled = false;
+  btn.textContent = prevText;
+  if (error) { showError('login', error.message); return; }
+
+  loginOtpEmail = email;
+  loginOtpSent = true;
+  document.getElementById('login-otp-section').style.display = 'block';
+  document.getElementById('login-send-btn').style.display = 'none';
+  showSuccess('login', 'We sent a 6-digit code to ' + email + '. Check your inbox.');
+  document.getElementById('login-otp').focus();
+}
+
+async function verifyLoginOtp() {
+  clearMessages('login');
+  const email = loginOtpEmail || document.getElementById('login-email').value.trim();
+  const token = document.getElementById('login-otp').value.trim().replace(/\s/g, '');
+  if (!email) { showError('login', 'Enter your email first'); return; }
+  if (!/^\d{6}$/.test(token)) { showError('login', 'Enter the 6-digit code from your email'); return; }
+
+  const btn = document.getElementById('login-verify-btn');
+  btn.disabled = true;
+  btn.textContent = 'Verifying...';
+
+  const { error } = await sb.auth.verifyOtp({ email, token, type: 'email' });
+
+  btn.disabled = false;
+  btn.textContent = 'Verify & sign in';
+  if (error) { showError('login', error.message); return; }
+
+  window.location.href = appRedirectUrl();
+}
+
+async function sendSignupOtp(isResend) {
+  clearMessages('signup');
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  if (!email) { showError('signup', 'Enter your email'); return; }
+
+  const btn = document.getElementById(isResend ? 'signup-resend-btn' : 'signup-send-btn');
+  const prevText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = isResend ? 'Resending...' : 'Sending...';
+
+  const { error } = await sb.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: true,
+      data: name ? { full_name: name } : {},
+    },
+  });
+
+  btn.disabled = false;
+  btn.textContent = prevText;
+  if (error) { showError('signup', error.message); return; }
+
+  signupOtpEmail = email;
+  signupOtpSent = true;
+  document.getElementById('signup-otp-section').style.display = 'block';
+  document.getElementById('signup-send-btn').style.display = 'none';
+  showSuccess('signup', 'We sent a 6-digit code to ' + email + '. Check your inbox.');
+  document.getElementById('signup-otp').focus();
+}
+
+async function verifySignupOtp() {
+  clearMessages('signup');
+  const email = signupOtpEmail || document.getElementById('signup-email').value.trim();
+  const token = document.getElementById('signup-otp').value.trim().replace(/\s/g, '');
+  if (!email) { showError('signup', 'Enter your email first'); return; }
+  if (!/^\d{6}$/.test(token)) { showError('signup', 'Enter the 6-digit code from your email'); return; }
+
+  const btn = document.getElementById('signup-verify-btn');
+  btn.disabled = true;
+  btn.textContent = 'Verifying...';
+
+  const { data, error } = await sb.auth.verifyOtp({ email, token, type: 'email' });
+
+  btn.disabled = false;
+  btn.textContent = 'Verify & create account';
+  if (error) { showError('signup', error.message); return; }
+
+  if (typeof window.baRedditConversion === 'function') {
+    const suId = (data.user && data.user.id) ? data.user.id : ('signup_' + email.replace(/[^a-z0-9@._-]/gi, ''));
+    window.baRedditConversion('SignUp', { conversionId: suId });
+  }
+
+  window.location.href = appRedirectUrl();
 }
 
 async function doLogin() {
@@ -308,8 +499,7 @@ async function doLogin() {
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   btn.disabled = false; btn.textContent = 'Sign in';
   if (error) { showError('login', error.message); return; }
-  const plan = new URLSearchParams(window.location.search).get('plan');
-  window.location.href = plan ? 'app.html?upgrade=' + plan : 'app.html';
+  window.location.href = appRedirectUrl();
 }
 
 async function doSignup() {
