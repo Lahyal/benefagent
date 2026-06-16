@@ -119,7 +119,7 @@
     --radius: 12px;
     --font-display: 'DM Serif Display', serif;
     --font-body: 'DM Sans', sans-serif;
-    --site-header-h: 96px;
+    --site-header-h: 110px;
   }
 
   html { scroll-behavior: smooth; }
@@ -165,8 +165,7 @@
     position: relative;
     display: flex; align-items: center; justify-content: space-between;
     padding: 18px 48px;
-    background: rgba(245,242,235,0.95);
-    backdrop-filter: blur(12px);
+    background: var(--paper);
     border-bottom: 1px solid rgba(14,14,13,0.08);
   }
   .nav-logo {
@@ -841,26 +840,8 @@
 </head>
 <body>
 
-<script>
-(function () {
-  function syncSiteHeaderHeight() {
-    var el = document.getElementById('site-header');
-    if (!el) return;
-    document.documentElement.style.setProperty('--site-header-h', el.offsetHeight + 'px');
-  }
-  syncSiteHeaderHeight();
-  window.addEventListener('resize', syncSiteHeaderHeight);
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(syncSiteHeaderHeight);
-  }
-})();
-</script>
-
 <!-- SITE HEADER -->
 <header class="site-header" id="site-header">
-  <div class="announce-banner">
-    <p>&#127381; <strong>New for 2026:</strong> More people qualify for HSA than ever — bronze &amp; catastrophic plans now eligible. <a href="login.html">Check your eligibility &rarr;</a></p>
-  </div>
   <nav>
     <a href="#" class="nav-logo">Benef<span>Agent</span></a>
     <div class="nav-links">
@@ -871,13 +852,35 @@
       <a href="blog.html">Blog</a>
     </div>
     <div id="nav-auth-area">
-      <a href="app.html" class="nav-cta" onclick="checkAuthAndOpen(event)">Open App</a>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <a href="login.html" style="font-size:14px;color:var(--ink2);text-decoration:none;">Sign in</a>
+        <a href="app.html" class="nav-cta" onclick="checkAuthAndOpen(event)">Open App</a>
+      </div>
     </div>
     <button class="nav-hamburger" onclick="toggleMobileMenu()" id="hamburger">
       <span></span><span></span><span></span>
     </button>
   </nav>
+  <div class="announce-banner">
+    <p>&#127381; <strong>New for 2026:</strong> More people qualify for HSA than ever — bronze &amp; catastrophic plans now eligible. <a href="login.html">Check your eligibility &rarr;</a></p>
+  </div>
 </header>
+
+<script>
+(function () {
+  function syncSiteHeaderHeight() {
+    var el = document.getElementById('site-header');
+    if (!el) return;
+    document.documentElement.style.setProperty('--site-header-h', el.offsetHeight + 'px');
+  }
+  syncSiteHeaderHeight();
+  document.addEventListener('DOMContentLoaded', syncSiteHeaderHeight);
+  window.addEventListener('resize', syncSiteHeaderHeight);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(syncSiteHeaderHeight);
+  }
+})();
+</script>
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobile-menu">
