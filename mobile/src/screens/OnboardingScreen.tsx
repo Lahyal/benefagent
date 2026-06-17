@@ -12,6 +12,7 @@ import { BrandLogo, BrandMark } from '../components/BrandLogo';
 import { ScreenBackground } from '../components/ScreenBackground';
 import { ONBOARDING_ACCOUNTS, ONBOARDING_PLAN } from '../constants/tools';
 import { setOnboardingComplete } from '../lib/onboardingStorage';
+import { savePendingProfile } from '../lib/profile';
 import { colors, radii, spacing, typography } from '../theme';
 import type { RootStackParamList } from '../navigation/types';
 
@@ -32,6 +33,13 @@ export function OnboardingScreen({ navigation }: Props) {
   };
 
   const finish = async () => {
+    await savePendingProfile({
+      salary,
+      contrib,
+      family,
+      commute,
+      accounts: selectedAccounts,
+    });
     await setOnboardingComplete();
     navigation.replace('Login');
   };

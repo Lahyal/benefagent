@@ -5,9 +5,15 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Session } from '@supabase/supabase-js';
 import { isOnboardingComplete } from '../lib/onboardingStorage';
 import { supabase } from '../lib/supabase';
+import { AnalyzerScreen } from '../screens/AnalyzerScreen';
+import { CalculatorScreen } from '../screens/CalculatorScreen';
+import { CheckerScreen } from '../screens/CheckerScreen';
+import { ClaimsScreen } from '../screens/ClaimsScreen';
+import { HistoryScreen } from '../screens/HistoryScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { MainScreen } from '../screens/MainScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 import { colors } from '../theme';
 import type { RootStackParamList } from './types';
 
@@ -66,6 +72,12 @@ export function AppNavigator() {
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Main" component={MainScreen} />
+        <Stack.Screen name="Analyzer" component={AnalyzerScreen} />
+        <Stack.Screen name="Checker" component={CheckerScreen} />
+        <Stack.Screen name="Claims" component={ClaimsScreen} />
+        <Stack.Screen name="Calculator" component={CalculatorScreen} />
+        <Stack.Screen name="History" component={HistoryScreen} />
+        <Stack.Screen name="Settings" component={SettingsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

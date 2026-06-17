@@ -5,6 +5,7 @@ import { Button } from '../components/Button';
 import { BrandLogo } from '../components/BrandLogo';
 import { Input } from '../components/Input';
 import { ScreenBackground } from '../components/ScreenBackground';
+import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
 import { colors, radii, spacing, typography } from '../theme';
 import type { RootStackParamList } from '../navigation/types';
@@ -12,6 +13,7 @@ import type { RootStackParamList } from '../navigation/types';
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 export function LoginScreen({ navigation }: Props) {
+  const { refreshAll } = useApp();
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
@@ -71,6 +73,7 @@ export function LoginScreen({ navigation }: Props) {
         type: 'email',
       });
       if (verifyError) throw verifyError;
+      await refreshAll();
       navigation.replace('Main');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
