@@ -432,7 +432,6 @@ body{font-family:var(--font-body);background:var(--paper);color:var(--ink);displ
       <div class="paywall-feat"><div class="paywall-feat-dot"></div>Annual contribution maximizer</div>
     </div>
     <button class="paywall-btn" id="paywall-pro-btn" onclick="upgradePlan('pro')">Get started — $12/month</button>
-    <p style="font-size:12px;color:var(--ink3);margin-top:8px;">+ $6/month per team member you invite</p>
     <p class="paywall-note">Cancel anytime &mdash; no hidden fees &mdash; instant access after payment</p>
   </div>
 </div>
@@ -443,7 +442,7 @@ body{font-family:var(--font-body);background:var(--paper);color:var(--ink);displ
     <div class="topbar">
       <div class="topbar-left"><h1 id="home-greeting">Good morning</h1><p>Your benefits overview</p></div>
       <div class="topbar-actions">
-        <button class="btn btn-ghost btn-sm" onclick=\"showS('analyzer',this)\">&#128196; Analyze benefits</button>
+        <button class="btn btn-ghost btn-sm" onclick="gatedFeature('analyzer',this)">&#128196; Analyze benefits</button>
         <button class="btn btn-primary btn-sm" onclick="exportSummary()">&#8595; Export</button>
       </div>
     </div>
@@ -458,20 +457,20 @@ body{font-family:var(--font-body);background:var(--paper);color:var(--ink);displ
         <div class="stat-card accent"><div class="stat-value" id="stat-found">$0</div><div class="stat-label">found for you</div></div>
         <div class="stat-card"><div class="stat-value" id="stat-claimed">$0</div><div class="stat-label">claimed so far</div></div>
         <div class="stat-card"><div class="stat-value" id="stat-checks">0</div><div class="stat-label">expense checks</div></div>
-        <div class="stat-card"><div class="stat-value" id="stat-actions"> - </div><div class="stat-label">actions remaining</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-actions">0</div><div class="stat-label">actions remaining</div></div>
       </div>
       <div id="home-empty">
         <div class="card"><div class="card-body"><div class="empty-state">
           <div class="empty-icon">&#128196;</div>
           <div class="empty-title">Upload your benefits document to get started</div>
           <div class="empty-sub">Our AI reads your employer benefits packet and finds every dollar you are missing  -  401k, HSA, FSA, commuter benefits, perks and more.</div>
-          <button class="btn btn-primary" onclick=\"showS('analyzer',this)\">Analyze my benefits</button>
+          <button class="btn btn-primary" onclick="gatedFeature('analyzer',this)">Analyze my benefits</button>
         </div></div></div>
       </div>
       <div id="home-loaded" style="display:none;">
         <div class="two-col" style="margin-bottom:16px;">
           <div class="card">
-            <div class="card-header"><div class="card-title">Your action plan</div><button class="btn btn-ghost btn-sm" onclick=\"showS('analyzer',this)\">Re-analyze</button></div>
+            <div class="card-header"><div class="card-title">Your action plan</div><button class="btn btn-ghost btn-sm" onclick="gatedFeature('analyzer',this)">Re-analyze</button></div>
             <div class="card-body" id="home-actions"></div>
           </div>
           <div class="card">
@@ -510,7 +509,7 @@ body{font-family:var(--font-body);background:var(--paper);color:var(--ink);displ
           <button onclick="clearFile()" style="background:none;border:none;font-size:16px;color:var(--ink3);cursor:pointer;">&times;</button>
         </div>
         <button class="analyze-btn" id="analyze-btn" onclick="analyzeDoc()" disabled>Analyze my benefits with AI</button>
-        <p style="text-align:center;font-size:12px;color:var(--ink3);margin-top:8px;">Your document is processed privately and never stored.</p>
+        <p style="text-align:center;font-size:12px;color:var(--ink3);margin-top:8px;">Your file is sent securely for AI analysis. We save your results, not the original document.</p>
       </div>
       <div id="analyzer-s2" style="display:none;text-align:center;padding:48px 0;">
         <div class="spinner"></div>
@@ -680,7 +679,7 @@ body{font-family:var(--font-body);background:var(--paper);color:var(--ink);displ
       </div>
       <div class="settings-section">
         <div class="settings-section-title">Data</div>
-        <div class="settings-row"><div><div class="settings-row-label">Export year summary</div><div class="settings-row-sub">Download all your data as PDF</div></div><button class="btn btn-ghost btn-sm" onclick="exportSummary()">Export</button></div>
+        <div class="settings-row"><div><div class="settings-row-label">Print year summary</div><div class="settings-row-sub">Open a printable summary of your activity</div></div><button class="btn btn-ghost btn-sm" onclick="exportSummary()">Print</button></div>
       </div>
     </div>
   </div>
@@ -843,6 +842,7 @@ async function init() {
   await loadProfileFromSupabase();
   loadSavedResults();
   loadCheckHistoryFromDB();
+  loadClaimDraft();
   await loadUserPlan();
   checkDeadlines();
 
@@ -1000,7 +1000,18 @@ function checkDeadlines() {
 }
 
 // ── NAVIGATION ──
-function gotoScreen(id) { showS(id, null); }
+const GATED_SCREENS = ['analyzer', 'checker', 'claims', 'history'];
+
+function requirePlan() {
+  if (userPlan === 'none') { showPaywall(); return false; }
+  return true;
+}
+
+function gotoScreen(id) {
+  if (GATED_SCREENS.includes(id)) { gatedFeature(id, null); return; }
+  showS(id, null);
+}
+
 function showS(id, btn) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1008,10 +1019,9 @@ function showS(id, btn) {
   if (btn) btn.classList.add('active');
 }
 
-
 // ── FEATURE GATING ────────────────────────────────────────────────────────
 function gatedFeature(screen, btn) {
-  if (userPlan === 'none') { showPaywall(); return; }
+  if (!requirePlan()) return;
   showS(screen, btn);
 }
 
@@ -1040,6 +1050,7 @@ function clearFile() {
 
 // ── ANALYZER ──
 async function analyzeDoc() {
+  if (!requirePlan()) return;
   if (!selFile) return;
   document.getElementById('analyzer-s1').style.display = 'none';
   document.getElementById('analyzer-s2').style.display = 'block';
@@ -1092,6 +1103,7 @@ function switchMode(mode, btn) {
 function qCheck(exp) { document.getElementById('hsa-input').value = exp; document.getElementById('hsa-amount').value = ''; checkEligibility(); }
 
 async function checkEligibility() {
+  if (!requirePlan()) return;
   const expense = document.getElementById('hsa-input').value.trim();
   const type = document.getElementById('hsa-type').value;
   const amountRaw = parseFloat(document.getElementById('hsa-amount')?.value) || 0;
@@ -1180,6 +1192,7 @@ function handleReceiptFile(f) {
 }
 
 async function scanReceipt() {
+  if (!requirePlan()) return;
   if (!selReceipt) return;
   const btn = document.getElementById('receipt-btn'), resultEl = document.getElementById('receipt-result');
   btn.disabled = true; btn.textContent = 'Scanning...';
@@ -1220,10 +1233,26 @@ async function scanReceipt() {
 
 function addReceiptClaim(r) {
   (r.items||[]).filter(i => i.eligible !== 'no').forEach(item => addClaim(item.name + ' (' + (r.store||'Store') + ')', item.amount||0));
-  showS('claims', document.querySelector('[onclick*=claims]'));
+  gatedFeature('claims', document.querySelector('[onclick*=claims]'));
 }
 
 // ── CLAIM BUILDER ──
+function loadClaimDraft() {
+  if (!user) return;
+  try {
+    const raw = localStorage.getItem('ba_claims_' + user.id);
+    if (raw) {
+      claimItems = JSON.parse(raw);
+      updateClaimUI();
+    }
+  } catch (_) {}
+}
+
+function saveClaimDraft() {
+  if (!user) return;
+  localStorage.setItem('ba_claims_' + user.id, JSON.stringify(claimItems));
+}
+
 function addClaim(desc, amount) {
   claimItems.push({ desc, amount: parseFloat(amount)||0, date: new Date().toLocaleDateString(), id: Date.now() });
   updateClaimUI();
@@ -1232,17 +1261,24 @@ function addClaim(desc, amount) {
 
 function updateClaimUI() {
   const empty = document.getElementById('claim-empty-msg'), list = document.getElementById('claim-list'), total = document.getElementById('claim-total');
-  if (!claimItems.length) { empty.style.display = 'block'; list.style.display = 'none'; total.style.display = 'none'; document.getElementById('claim-badge').style.display = 'none'; return; }
+  if (!claimItems.length) {
+    empty.style.display = 'block'; list.style.display = 'none'; total.style.display = 'none';
+    document.getElementById('claim-badge').style.display = 'none';
+    saveClaimDraft();
+    return;
+  }
   empty.style.display = 'none'; list.style.display = 'block'; total.style.display = 'flex';
   list.innerHTML = claimItems.map(i=>`<div class="claim-item-row"><span style="flex:1;font-size:13px;color:var(--ink);">${i.desc}</span><span style="font-size:12px;color:var(--ink3);margin-right:10px;">${i.date}</span><span style="font-size:13px;font-weight:500;color:var(--ink);">$${i.amount.toFixed(2)}</span><button onclick="removeClaim(${i.id})" style="background:none;border:none;color:var(--ink3);cursor:pointer;font-size:16px;padding:0 4px;">&times;</button></div>`).join('');
   document.getElementById('claim-total-val').textContent = '$' + claimItems.reduce((s,i)=>s+i.amount,0).toFixed(2);
   document.getElementById('claim-badge').textContent = claimItems.length;
+  saveClaimDraft();
 }
 
 function removeClaim(id) { claimItems = claimItems.filter(i => i.id !== id); updateClaimUI(); }
 function clearClaims() { claimItems = []; updateClaimUI(); document.getElementById('claim-output').style.display = 'none'; }
 
 async function generateClaim() {
+  if (!requirePlan()) return;
   const name = document.getElementById('claim-name').value.trim();
   const memberId = document.getElementById('claim-id').value.trim();
   const accountType = document.getElementById('claim-acct').value;
@@ -1387,7 +1423,7 @@ async function loadCheckHistoryFromDB() {
 
 async function loadSavedResults() {
   if (!user) return;
-  const { data } = await sb.from('benefits_results').select('*').eq('user_id',user.id).order('created_at',{ascending:false}).limit(1).single();
+  const { data } = await sb.from('benefits_results').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle();
   if (data?.raw_json) { benefits = data.raw_json; updateDashboard(data.raw_json); }
 }
 
@@ -1431,12 +1467,17 @@ function showErr(msg) {
 }
 
 function exportSummary() {
+  const found = benefits
+    ? (benefits.total_opportunity || (benefits.actions || []).reduce((s, a) => s + (a.estimated_annual_value || 0), 0))
+    : 0;
   var summary = '<h1>BenefAgent Year Summary</h1>';
   summary += '<p>Generated: ' + new Date().toLocaleDateString() + '</p>';
-  summary += '<h2>Total Found: $' + totalSaved.toLocaleString() + '</h2>';
-  summary += '<h2>Expense Checks: ' + totalChecks + '</h2>';
+  summary += '<p>Account: ' + (user?.email || '') + '</p>';
+  summary += '<h2>Benefits opportunity found: $' + Math.round(found).toLocaleString() + '/yr</h2>';
+  summary += '<h2>Claims submitted: $' + Math.round(totalSaved).toLocaleString() + '</h2>';
+  summary += '<h2>Expense checks: ' + totalChecks + '</h2>';
   if (historyLog.length) {
-    summary += '<h2>Recent Activity</h2><ul>';
+    summary += '<h2>Recent activity</h2><ul>';
     historyLog.slice(0, 10).forEach(function(h) { summary += '<li>' + (h.expense || h.employer || 'Activity') + '</li>'; });
     summary += '</ul>';
   }
