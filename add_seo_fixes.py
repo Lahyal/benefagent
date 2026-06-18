@@ -38,6 +38,7 @@ articles = {
     "is-minoxidil-hsa-eligible.html":                {"title": "Is Minoxidil HSA or FSA Eligible in 2026?",                                            "topics": ["hsa","fsa","eligible","expenses"]},
     "is-ozempic-hsa-eligible.html":                  {"title": "Is Ozempic or Wegovy HSA or FSA Eligible in 2026?",                                    "topics": ["hsa","fsa","eligible","expenses","prescription"]},
     "is-therapy-hsa-eligible.html":                  {"title": "Is Therapy HSA or FSA Eligible in 2026?",                                              "topics": ["hsa","fsa","eligible","expenses","therapy"]},
+    "401k-vesting-schedule-explained.html":          {"title": "401(k) Vesting Schedule Explained",                                                     "topics": ["401k","vesting","employer","match"]},
     "what-is-a-good-401k-match.html":                {"title": "What Is a Good 401k Employer Match? (2026 Benchmarks)",                                "topics": ["401k","match","employer","benchmark"]},
 }
 
