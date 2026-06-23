@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://benefagent.com/sitemap.xml
+Sitemap: https://www.benefagent.com/sitemap.xml

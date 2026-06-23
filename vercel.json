@@ -1,11 +1,5 @@
 {
   "redirects": [
-    {
-      "source": "/:path*",
-      "has": [{ "type": "host", "value": "www.benefagent.com" }],
-      "destination": "https://benefagent.com/:path*",
-      "permanent": true
-    },
     { "source": "/pwa.html", "destination": "/app.html", "permanent": true },
     { "source": "/manifest.json", "destination": "/", "permanent": true },
     { "source": "/sw.js", "destination": "/", "permanent": true }
