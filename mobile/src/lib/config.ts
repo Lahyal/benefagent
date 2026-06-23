@@ -14,6 +14,7 @@ export const LEGAL = {
   terms: 'https://www.benefagent.com/terms.html',
   website: 'https://www.benefagent.com',
   contactEmail: 'contact@lahyal.com',
+  appStore: 'https://apps.apple.com/us/app/benefagent-benefits-finder/id6781089266',
 };
 
 export function featureSuggestionMailto() {
