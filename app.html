@@ -794,7 +794,7 @@ async function upgradePlan(plan) {
   try {
     const res = await fetch(STRIPE_FN + '/create-checkout', {
       method: 'POST', headers: AUTH,
-      body: JSON.stringify({ plan, userId: user.id, userEmail: user.email, priceId: 'price_1TIEm4Cyv4lcORD3UysEE2nX', successUrl: 'https://benefagent.com/app.html?payment=success', cancelUrl: 'https://benefagent.com/app.html' })
+      body: JSON.stringify({ plan, userId: user.id, userEmail: user.email, priceId: 'price_1TIEm4Cyv4lcORD3UysEE2nX', successUrl: 'https://www.benefagent.com/app.html?payment=success', cancelUrl: 'https://www.benefagent.com/app.html' })
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error);

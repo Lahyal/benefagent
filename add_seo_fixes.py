@@ -50,12 +50,12 @@ AUTHOR_SCHEMA = '''  <script type="application/ld+json">
     "@context": "https://schema.org",
     "@type": "Person",
     "name": "BenefAgent Editorial Team",
-    "url": "https://benefagent.com",
+    "url": "https://www.benefagent.com",
     "worksFor": {
       "@type": "Organization",
       "name": "BenefAgent",
-      "url": "https://benefagent.com",
-      "logo": "https://benefagent.com/og-image.png",
+      "url": "https://www.benefagent.com",
+      "logo": "https://www.benefagent.com/og-image.png",
       "sameAs": ["https://twitter.com/benefagent"]
     },
     "knowsAbout": ["HSA", "FSA", "401k", "Employee Benefits", "Health Insurance", "Retirement Planning"]
