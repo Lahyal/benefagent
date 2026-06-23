@@ -38,6 +38,9 @@ articles = {
     "is-minoxidil-hsa-eligible.html":                {"title": "Is Minoxidil HSA or FSA Eligible in 2026?",                                            "topics": ["hsa","fsa","eligible","expenses"]},
     "is-ozempic-hsa-eligible.html":                  {"title": "Is Ozempic or Wegovy HSA or FSA Eligible in 2026?",                                    "topics": ["hsa","fsa","eligible","expenses","prescription"]},
     "is-therapy-hsa-eligible.html":                  {"title": "Is Therapy HSA or FSA Eligible in 2026?",                                              "topics": ["hsa","fsa","eligible","expenses","therapy"]},
+    "401k-monthly-income-calculator.html":            {"title": "How Much Will My 401(k) Pay Me Per Month? Calculator & Examples (2026)",          "topics": ["401k","retirement","calculator","income"]},
+    "401k-balance-for-1000-monthly.html":             {"title": "How Much Do I Need in My 401(k) for $1,000 Per Month?",                              "topics": ["401k","retirement","savings","income"]},
+    "retire-at-62-with-400k-401k.html":               {"title": "Can I Retire at 62 With $400,000 in My 401(k)?",                                      "topics": ["401k","retirement","early retirement"]},
     "401k-vesting-schedule-explained.html":          {"title": "401(k) Vesting Schedule Explained",                                                     "topics": ["401k","vesting","employer","match"]},
     "what-is-a-good-401k-match.html":                {"title": "What Is a Good 401k Employer Match? (2026 Benchmarks)",                                "topics": ["401k","match","employer","benchmark"]},
 }
